@@ -1,4 +1,4 @@
-# tech-earnings-deepdive
+# tech-earnings-deepdive-openclaw-skill
 
 科技股财报深度分析与多视角投资备忘录系统（v3.0）
 
@@ -43,12 +43,12 @@
 
 ```bash
 # 命令行调用
-~/.openclaw/workspace/skills/tech-earnings-deepdive/run.sh <股票代码>
+~/.openclaw/workspace/skills/tech-earnings-deepdive-openclaw-skill/run.sh <股票代码>
 
 # 示例
-~/.openclaw/workspace/skills/tech-earnings-deepdive/run.sh NVDA
-~/.openclaw/workspace/skills/tech-earnings-deepdive/run.sh TSLA
-~/.openclaw/workspace/skills/tech-earnings-deepdive/run.sh MSFT
+~/.openclaw/workspace/skills/tech-earnings-deepdive-openclaw-skill/run.sh NVDA
+~/.openclaw/workspace/skills/tech-earnings-deepdive-openclaw-skill/run.sh TSLA
+~/.openclaw/workspace/skills/tech-earnings-deepdive-openclaw-skill/run.sh MSFT
 ```
 
 或在对话中直接询问：

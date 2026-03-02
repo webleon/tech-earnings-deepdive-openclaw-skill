@@ -4,7 +4,7 @@
 
 ### 1️⃣ 更新 About 描述 / Update About Description
 
-**访问 / Visit:** https://github.com/webleon/tech-earnings-deepdive-skill/settings
+**访问 / Visit:** https://github.com/webleon/tech-earnings-deepdive-openclaw-skill-skill/settings
 
 **中文描述 / Chinese Description:**
 ```

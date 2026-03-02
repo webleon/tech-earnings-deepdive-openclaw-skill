@@ -4,7 +4,7 @@
 
 ## 🎁 分享包位置
 
-**文件位置：** `/tmp/tech-earnings-deepdive-skill.zip`
+**文件位置：** `/tmp/tech-earnings-deepdive-openclaw-skill-skill.zip`
 **文件大小：** 2.9MB（优化后）
 
 ---
@@ -14,7 +14,7 @@
 ### 方式 1：直接发送文件（推荐）⭐
 
 **步骤：**
-1. 找到文件：`/tmp/tech-earnings-deepdive-skill.zip`
+1. 找到文件：`/tmp/tech-earnings-deepdive-openclaw-skill-skill.zip`
 2. 通过微信/QQ/邮件/AirDrop 发送
 
 **优点：** 最简单直接，不需要第三方服务
@@ -25,7 +25,7 @@
 
 **iCloud Drive：**
 ```bash
-cp /tmp/tech-earnings-deepdive-skill.zip ~/Library/Mobile\ Documents/com~apple~CloudDocs/
+cp /tmp/tech-earnings-deepdive-openclaw-skill-skill.zip ~/Library/Mobile\ Documents/com~apple~CloudDocs/
 # 然后在 iCloud.com 生成分享链接
 ```
 
@@ -40,13 +40,13 @@ cp /tmp/tech-earnings-deepdive-skill.zip ~/Library/Mobile\ Documents/com~apple~C
 
 **步骤：**
 ```bash
-cd /tmp/tech-earnings-deepdive-share
+cd /tmp/tech-earnings-deepdive-openclaw-skill-share
 rm -rf cache/ output/ .DS_Store
 
 git init
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/tech-earnings-deepdive-skill.git
+git remote add origin https://github.com/YOUR_USERNAME/tech-earnings-deepdive-openclaw-skill-skill.git
 git push -u origin main
 ```
 
@@ -60,13 +60,13 @@ git push -u origin main
 
 ```bash
 # 1. 解压
-unzip tech-earnings-deepdive-skill.zip
+unzip tech-earnings-deepdive-openclaw-skill-skill.zip
 
 # 2. 复制
-cp -r tech-earnings-deepdive-share ~/.openclaw/workspace/skills/tech-earnings-deepdive
+cp -r tech-earnings-deepdive-openclaw-skill-share ~/.openclaw/workspace/skills/tech-earnings-deepdive-openclaw-skill
 
 # 3. 安装依赖
-cd ~/.openclaw/workspace/skills/tech-earnings-deepdive
+cd ~/.openclaw/workspace/skills/tech-earnings-deepdive-openclaw-skill
 python3 -m venv venv
 source venv/bin/activate
 pip install yfinance markdown weasyprint

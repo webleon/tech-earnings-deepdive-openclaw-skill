@@ -2,7 +2,11 @@
 
 科技股财报深度分析与多视角投资备忘录系统
 
+Institutional-Grade Tech Stock Earnings Analysis & Multi-Perspective Investment Memo System
+
 基于 Day1Global 框架 · 复刻专业投资机构分析方法论
+
+Based on Day1Global Framework · Replicating Professional Investment Analysis Methodology
 
 ---
 
@@ -120,10 +124,10 @@ tech-earnings-deepdive/
 | 视角 | 代表人物 | 评分维度 | 核心问题 |
 |------|----------|---------|---------|
 | **质量复利** | 巴菲特/芒格 | 护城河、ROE、自由现金流、管理层 | 市场关闭 10 年能安心睡觉吗？ |
-| **想象力成长** | Baillie Gifford/ARK | TAM、创新能力、成长速度、长期潜力 | 5 年后不买会后悔吗？ |
-| **基本面多空** | Tiger Cubs | 相对价值、催化剂、风险收益、做空机会 | 有 Variant View 吗？ |
+| **想象力** | Baillie Gifford/ARK | TAM、创新能力、成长速度、长期潜力 | 5 年后不买会后悔吗？ |
+| **基本面** | Tiger Cubs | 相对价值、催化剂、风险收益、做空机会 | 有 Variant View 吗？ |
 | **深度价值** | Klarman/Marks | 安全边际、资产价值、逆向机会、清算价值 | 比清算价值低多少？ |
-| **催化剂驱动** | Tepper/Ackman | 催化剂强度、activist 机会、重组、并购 | 6-18 个月有什么催化剂？ |
+| **催化剂** | Tepper/Ackman | 催化剂强度、activist 机会、重组、并购 | 6-18 个月有什么催化剂？ |
 | **宏观战术** | Druckenmiller | 宏观环境、流动性、行业轮动、趋势 | 宏观是顺风还是逆风？ |
 
 ---
@@ -134,12 +138,12 @@ tech-earnings-deepdive/
 
 | 方法 | 创始人 | 计算公式 | 判断标准 |
 |------|-------|---------|---------|
-| **Owner Earnings** | 巴菲特 | 净利润 + 折旧 - 资本支出 | 10-15 倍合理，安全边际>30% 买入 |
-| **PEG Ratio** | 彼得·林奇 | PE / 盈利增长率 | <0.5 极具吸引力，>2.0 昂贵 |
-| **Reverse DCF** | 逆向思维 | 从股价反推隐含增长率 | 隐含增长<历史增速=低估 |
+| **Owner Earnings** | 巴菲特 | 净利润 + 折旧 - 资本支出 | 10-15 倍合理 |
+| **PEG Ratio** | 彼得·林奇 | PE / 盈利增长率 | <0.5 极具吸引力 |
+| **Reverse DCF** | 逆向思维 | 从股价反推隐含增长率 | 隐含增长<历史=低估 |
 | **Magic Formula** | 格林布拉特 | 盈利收益率 + ROIC 排名 | 综合排名<10% 优秀 |
 | **EV/EBITDA** | 达摩达兰 | 企业价值 / EBITDA | 低于行业 20%+=低估 |
-| **Rule of 40** | SaaS 行业 | 增长率 + 利润率 | ≥40% 优秀，对应更高估值 |
+| **Rule of 40** | SaaS 行业 | 增长率 + 利润率 | ≥40% 优秀 |
 
 ---
 
@@ -167,8 +171,8 @@ tech-earnings-deepdive/
 | **应收账款异常** | 应收/收入 | >30% 则标记 |
 | **内部人交易** | 待接入 SEC Form 4 | - |
 | **资本支出暴增** | CapEx/收入 | >20% 则标记 |
-| **现金流背离** | 利润 vs 现金流 | 利润正但现金流负则标记 |
-| **负债结构恶化** | 负债率、流动比率 | 负债>1 或流动<1 则标记 |
+| **现金流背离** | 利润 vs 现金流 | 利润正但现金流负 |
+| **负债结构恶化** | 负债率、流动比率 | 负债>1 或流动<1 |
 
 #### 科技盲区（5 个）
 
@@ -273,34 +277,6 @@ tech-earnings-deepdive/
 
 基于 Day1Global 开源项目改编  
 原项目：https://github.com/star23/Day1Global-Skills/
-
----
-
-## 🔄 版本
-
-**v1.0.0** - 2026-03-02
-
-**新增功能：**
-- 投资摘要模块（专业投资报告风格）
-- 16 模块分析（含三列核心优势显示）
-- 6 大投资哲学视角（两列布局）
-- 关键驱动因素（三列网格布局）
-- 认知偏见检测表（完整 6 项）
-- 财务红旗模块（GAAP vs Non-GAAP、股权稀释）
-- Pre-Mortem 事前检查
-
-**优化改进：**
-- 全局字体层级统一（h1:22px, h2:17px, 正文：13-14px）
-- 24 个评分维度名称优化（更详细描述）
-- 章节名中文化（模块分析、投资视角）
-- 布局优化（关键驱动因素三列、投资视角两列）
-
-**问题修复：**
-- 核心问题重复显示
-- 评分维度名称重复
-- 字号不统一
-
-详细变更历史请查看 [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -414,10 +390,10 @@ Integrates 6 distinct investment worldviews, each with unique scoring dimensions
 | Perspective | Representatives | Scoring Dimensions | Core Question |
 |------|----------|---------|---------|
 | **Quality Compounder** | Buffett/Munger | Moat, ROE, FCF, Management | Can you sleep well if market closes for 10 years? |
-| **Imaginative Growth** | Baillie Gifford/ARK | TAM, Innovation, Growth, Long-term Potential | Will you regret not buying in 5 years? |
-| **Fundamental Long/Short** | Tiger Cubs | Relative Value, Catalyst, Risk/Reward, Short Opportunity | Do you have a Variant View? |
+| **Imaginative** | Baillie Gifford/ARK | TAM, Innovation, Growth, Long-term Potential | Will you regret not buying in 5 years? |
+| **Fundamental** | Tiger Cubs | Relative Value, Catalyst, Risk/Reward, Short Opportunity | Do you have a Variant View? |
 | **Deep Value** | Klarman/Marks | Margin of Safety, Asset Value, Contrarian, Liquidation Value | How much below liquidation value? |
-| **Catalyst-Driven** | Tepper/Ackman | Catalyst Strength, Activist, Restructuring, M&A | What catalyst in 6-18 months? |
+| **Catalyst** | Tepper/Ackman | Catalyst Strength, Activist, Restructuring, M&A | What catalyst in 6-18 months? |
 | **Macro Tactical** | Druckenmiller | Macro Environment, Liquidity, Sector Rotation, Trend | Is macro a tailwind or headwind? |
 
 ---
@@ -428,12 +404,12 @@ Integrates 6 classic valuation methods, covering valuation needs for different i
 
 | Method | Founder | Formula | Criteria |
 |------|-------|---------|---------|
-| **Owner Earnings** | Buffett | Net Income + D&A - CapEx | 10-15x reasonable, >30% margin of safety |
-| **PEG Ratio** | Peter Lynch | PE / Earnings Growth | <0.5 very attractive, >2.0 expensive |
+| **Owner Earnings** | Buffett | Net Income + D&A - CapEx | 10-15x reasonable |
+| **PEG Ratio** | Peter Lynch | PE / Earnings Growth | <0.5 very attractive |
 | **Reverse DCF** | Reverse Thinking | Implied growth from stock price | Implied growth < historical = undervalued |
 | **Magic Formula** | Greenblatt | Earnings Yield + ROIC Rank | Combined rank <10% excellent |
 | **EV/EBITDA** | Damodaran | Enterprise Value / EBITDA | <Industry -20% = undervalued |
-| **Rule of 40** | SaaS Industry | Growth Rate + Profit Margin | ≥40% excellent, higher valuation |
+| **Rule of 40** | SaaS Industry | Growth Rate + Profit Margin | ≥40% excellent |
 
 ---
 
@@ -567,34 +543,6 @@ Analysis generated by this Skill is based on public information and model calcul
 
 Based on Day1Global open source project  
 Original Project: https://github.com/star23/Day1Global-Skills/
-
----
-
-## 🔄 Version
-
-**v1.0.0** - 2026-03-02
-
-**New Features:**
-- Investment Summary Module (Professional investment report style)
-- 16-Module Analysis (with three-column core strengths display)
-- 6 Investment Philosophy Perspectives (two-column layout)
-- Key Forces (three-column grid layout)
-- Cognitive Biases Detection Table (complete 6 items)
-- Financial Red Flags Module (GAAP vs Non-GAAP, Stock Dilution)
-- Pre-Mortem Pre-mortem Check
-
-**Improvements:**
-- Unified Font Hierarchy (h1:22px, h2:17px, Body:13-14px)
-- 24 Dimension Names Optimized (more detailed descriptions)
-- Chinese Section Names
-- Layout Optimization (Key Forces three-column, Perspectives two-column)
-
-**Bug Fixes:**
-- Duplicate Core Questions
-- Duplicate Dimension Names
-- Inconsistent Font Sizes
-
-See [CHANGELOG.md](CHANGELOG.md) for detailed changelog
 
 ---
 

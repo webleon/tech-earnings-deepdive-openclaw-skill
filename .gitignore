@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+
+# 缓存
+cache/
+
+# 输出报告（测试用）
+output/
+
+# 临时文件
+*.tmp

@@ -301,23 +301,22 @@ class BiasFramework:
             
             if is_red_flag:
                 severity = '高' if gap_percentage > 100 else '中'
+                return {
+                    'name': 'GAAP vs Non-GAAP 差异',
+                    'description': f'GAAP 净利润${net_income/1e9:.1f}亿 vs Non-GAAP 净利润${non_gaap_net_income/1e9:.1f}亿，差异{gap_percentage:.1f}%（主要调整项：SBC ${sbc/1e9:.1f}亿）',
+                    'risk': severity,
+                    'data': {
+                        'gaap_net_income': net_income,
+                        'non_gaap_net_income': non_gaap_net_income,
+                        'gap': gap,
+                        'gap_percentage': gap_percentage,
+                        'sbc': sbc,
+                        'sbc_to_revenue_ratio': sbc_to_revenue_ratio
+                    },
+                    'analysis': f'差异{gap_percentage:.1f}%，{"⚠️ 偏高" if gap_percentage > 50 else "✅ 合理"}。SBC 占收入{sbc_to_revenue_ratio:.1f}%，{"⚠️ 偏高" if sbc_to_revenue_ratio > 15 else "✅ 合理"}'
+                }
             else:
-                severity = None
-            
-            return {
-                'name': 'GAAP vs Non-GAAP 差异',
-                'description': f'GAAP 净利润${net_income/1e9:.1f}亿 vs Non-GAAP 净利润${non_gaap_net_income/1e9:.1f}亿，差异{gap_percentage:.1f}%（主要调整项：SBC ${sbc/1e9:.1f}亿）',
-                'risk': severity,
-                'data': {
-                    'gaap_net_income': net_income,
-                    'non_gaap_net_income': non_gaap_net_income,
-                    'gap': gap,
-                    'gap_percentage': gap_percentage,
-                    'sbc': sbc,
-                    'sbc_to_revenue_ratio': sbc_to_revenue_ratio
-                },
-                'analysis': f'差异{gap_percentage:.1f}%，{"⚠️ 偏高" if gap_percentage > 50 else "✅ 合理"}。SBC 占收入{sbc_to_revenue_ratio:.1f}%，{"⚠️ 偏高" if sbc_to_revenue_ratio > 15 else "✅ 合理"}'
-            }
+                return None  # 没有触发红旗，返回 None
         except Exception as e:
             return None
     
@@ -332,7 +331,10 @@ class BiasFramework:
             return {
                 'name': '应收账款占比过高',
                 'description': f'应收账款占收入{receivables_ratio:.1f}%',
-                'risk': '中'
+                'risk': '中',
+                'data': {
+                    'receivables_ratio': round(receivables_ratio, 1)
+                }
             }
         return None
     
@@ -352,7 +354,10 @@ class BiasFramework:
             return {
                 'name': '资本支出占比高',
                 'description': f'CapEx 占收入{capex_ratio:.1f}%',
-                'risk': '中'
+                'risk': '中',
+                'data': {
+                    'capex_ratio': round(capex_ratio, 1)
+                }
             }
         return None
     
@@ -365,7 +370,12 @@ class BiasFramework:
             return {
                 'name': '现金流与利润背离',
                 'description': f'净利润${net_income/1e9:.1f}亿，经营现金流${operating_cf/1e9:.1f}亿',
-                'risk': '高'
+                'risk': '高',
+                'data': {
+                    'net_income': round(net_income/1e9, 1),
+                    'operating_cf': round(operating_cf/1e9, 1),
+                    'cash_flow_ratio': round(operating_cf/net_income, 2) if net_income > 0 else 0
+                }
             }
         return None
     
@@ -378,7 +388,11 @@ class BiasFramework:
             return {
                 'name': '负债结构风险',
                 'description': f'负债率{debt_to_equity:.2f}，流动比率{current_ratio:.2f}',
-                'risk': '高' if debt_to_equity > 1.5 or current_ratio < 0.8 else '中'
+                'risk': '高' if debt_to_equity > 1.5 or current_ratio < 0.8 else '中',
+                'data': {
+                    'debt_ratio': round(debt_to_equity, 2),
+                    'current_ratio': round(current_ratio, 2)
+                }
             }
         return None
     

@@ -335,16 +335,16 @@ class ValuationCalculator:
         
         # 判断
         if rule_of_40 >= 60:
-            verdict = '优秀（Rule of 40 >= 60%）'
+            verdict = '优秀'
             fair_ev_revenue = 15
         elif rule_of_40 >= 40:
-            verdict = '良好（Rule of 40 40-60%）'
+            verdict = '良好'
             fair_ev_revenue = 10
         elif rule_of_40 >= 20:
-            verdict = '一般（Rule of 40 20-40%）'
+            verdict = '一般'
             fair_ev_revenue = 6
         else:
-            verdict = '差（Rule of 40 < 20%）'
+            verdict = '较差'
             fair_ev_revenue = 3
         
         # 判断估值
@@ -354,6 +354,9 @@ class ValuationCalculator:
             valuation_verdict = '合理'
         else:
             valuation_verdict = '高估'
+        
+        # 综合判断：Rule of 40 等级 + 估值状态
+        full_verdict = f'{verdict}（{valuation_verdict}）'
         
         return {
             'method': 'EV/Revenue + Rule of 40（科技股）',
@@ -365,7 +368,7 @@ class ValuationCalculator:
             'operating_margin': round(operating_margin, 2),
             'rule_of_40': round(rule_of_40, 2),
             'fair_ev_revenue': fair_ev_revenue,
-            'verdict': f'{verdict} - {valuation_verdict}',
+            'verdict': full_verdict,
             'standards': {
                 'excellent': 'Rule of 40 >= 60%',
                 'good': 'Rule of 40 40-60%',

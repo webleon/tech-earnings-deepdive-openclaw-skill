@@ -9,6 +9,8 @@ import yfinance as yf
 import requests
 import json
 import os
+import pandas as pd
+import numpy as np
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -27,8 +29,20 @@ class StockDataFetcher:
         self.cache_file = CACHE_DIR / f"{self.ticker}_data.json"
         
         # SEC User-Agent（必须设置）
+        # 从本地配置文件读取，避免提交敏感信息到 GitHub
+        local_config_file = Path(__file__).parent / '..' / 'config.local.json'
+        sec_user_agent = 'Tech Earnings Deepdive script@example.com'  # 默认值
+        
+        if local_config_file.exists():
+            try:
+                with open(local_config_file, 'r') as f:
+                    local_config = json.load(f)
+                    sec_user_agent = local_config.get('sec_user_agent', sec_user_agent)
+            except:
+                pass
+        
         self.sec_headers = {
-            'User-Agent': 'Tech Earnings Deepdive your@email.com'  # 替换为你的邮箱
+            'User-Agent': sec_user_agent
         }
     
     def is_cache_valid(self) -> bool:
@@ -49,14 +63,22 @@ class StockDataFetcher:
         return False
     
     def load_cache(self) -> dict:
-        """加载缓存数据"""
-        with open(self.cache_file, 'r') as f:
-            return json.load(f)
+        """加载缓存数据（带异常处理）"""
+        try:
+            with open(self.cache_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError) as e:
+            print(f"⚠️ 加载缓存失败：{e}")
+            return {}
     
     def save_cache(self, data: dict):
-        """保存缓存数据"""
-        with open(self.cache_file, 'w') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+        """保存缓存数据（带异常处理）"""
+        try:
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            with open(self.cache_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        except (PermissionError, OSError) as e:
+            print(f"⚠️ 保存缓存失败：{e}")
     
     def get_price_data(self) -> dict:
         """获取价格数据"""
@@ -95,9 +117,14 @@ class StockDataFetcher:
             
             # 获取最新年度数据
             def get_latest(series):
+                """安全获取最新数据，返回 None 表示缺失"""
                 if len(series) > 0:
-                    return series.iloc[0]
-                return 0
+                    value = series.iloc[0]
+                    # 处理 NaN 和无穷大
+                    if pd.isna(value) or not np.isfinite(value):
+                        return None
+                    return value
+                return None
             
             # 获取股票期权费用 (SBC)
             def get_sbc():

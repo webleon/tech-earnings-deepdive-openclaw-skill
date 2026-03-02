@@ -13,11 +13,19 @@ set -e
 
 # 脚本目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV_DIR="${SCRIPT_DIR}/venv"
 LOG_DIR="${SCRIPT_DIR}/log"
 CACHE_DIR="${SCRIPT_DIR}/cache"
 MODULES_DIR="${SCRIPT_DIR}/modules"
 TEMPLATES_DIR="${SCRIPT_DIR}/templates"
 CONFIG_FILE="${SCRIPT_DIR}/config.json"
+
+# 激活虚拟环境
+if [[ -d "$VENV_DIR" ]]; then
+    source "$VENV_DIR/bin/activate"
+else
+    echo "⚠️ 虚拟环境不存在，使用系统 Python"
+fi
 
 # 日志文件
 LOG_FILE="${LOG_DIR}/$(date +%Y-%m-%d).log"

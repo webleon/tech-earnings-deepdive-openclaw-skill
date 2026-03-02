@@ -2,6 +2,9 @@
 __pycache__/
 *.pyc
 
+# 虚拟环境
+venv/
+
 # 缓存
 cache/
 
@@ -10,3 +13,6 @@ output/
 
 # 临时文件
 *.tmp
+
+# 本地配置（含敏感信息）
+config.local.json

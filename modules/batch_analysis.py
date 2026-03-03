@@ -104,14 +104,102 @@ class BatchAnalyzer:
             # 反偏见
             biases = check_biases(data)
             
-            # 综合评分
+            # ========== 综合评分（16 模块 +6 视角 + 估值） ==========
             avg_module_score = sum(m.get('score', 0) for m in modules.values()) / 16
             perspective_summary = perspectives.get('summary', {})
             perspective_pct = perspective_summary.get('average_score', 0)
             valuation_summary = valuation.get('summary', {})
             upside = valuation_summary.get('upside_downside', 0)
             
-            overall_score = (avg_module_score * 0.5 + perspective_pct * 0.2 + (100 + upside) / 2 * 0.3)
+            base_score = (avg_module_score * 0.5 + perspective_pct * 0.2 + (100 + upside) / 2 * 0.3)
+            
+            # 红旗减分
+            red_flags = biases.get('financial_red_flags', {}).get('flags', [])
+            red_flag_penalty = sum(
+                15 if flag.get('risk') == '高' else
+                8 if flag.get('risk') == '中' else
+                3 if flag.get('risk') == '低' else 0
+                for flag in red_flags
+            )
+            
+            overall_score = max(0, base_score - red_flag_penalty)
+            
+            # ========== MSCI Barra 6 大因子评分 ==========
+            # 质量因子（30%）：A,B,C,E,H,I,O
+            quality_modules = ['A_revenue_quality', 'B_profitability', 'C_cashflow', 
+                              'E_competitive_landscape', 'H_partner_ecosystem', 
+                              'I_executive_team', 'O_accounting_quality']
+            quality_score = sum(modules.get(m, {}).get('score', 0) for m in quality_modules) / len(quality_modules)
+            
+            # 成长因子（25%）：F,G,N
+            growth_modules = ['F_core_kpis', 'G_products_new_business', 'N_rd_efficiency']
+            growth_score = sum(modules.get(m, {}).get('score', 0) for m in growth_modules) / len(growth_modules)
+            
+            # 价值因子（20%）：K
+            value_score = modules.get('K_valuation', {}).get('score', 0)
+            
+            # 情绪因子（10%）：D,L
+            sentiment_modules = ['D_forward_guidance', 'L_ownership']
+            sentiment_score = sum(modules.get(m, {}).get('score', 0) for m in sentiment_modules) / len(sentiment_modules)
+            
+            # 宏观因子（10%）：J
+            macro_score = modules.get('J_macro', {}).get('score', 0)
+            
+            # ESG 因子（5%）：P
+            esg_score = modules.get('P_esg', {}).get('score', 0)
+            
+            # MSCI Barra 综合评分
+            barra_score = (
+                quality_score * 0.30 +
+                growth_score * 0.25 +
+                value_score * 0.20 +
+                sentiment_score * 0.10 +
+                macro_score * 0.10 +
+                esg_score * 0.05
+            )
+            
+            # ========== 置信度计算（基于分歧度） ==========
+            import statistics
+            
+            # 1. 投资视角分歧度（50% 权重）
+            perspective_scores = [p.get('total_score', 0) for p in perspectives.values() if isinstance(p, dict) and 'total_score' in p]
+            if len(perspective_scores) >= 2:
+                perspective_std = statistics.stdev(perspective_scores)
+                if perspective_std < 10:
+                    perspective_conf = 100
+                elif perspective_std < 20:
+                    perspective_conf = 70
+                else:
+                    perspective_conf = 40
+            else:
+                perspective_conf = 50  # 数据不足，默认中等
+            
+            # 2. 估值方法分歧度（50% 权重）
+            valuation_methods = valuation.get('methods', {})
+            upside_values = []
+            for method_name, method_data in valuation_methods.items():
+                if isinstance(method_data, dict) and 'upside_downside' in method_data:
+                    upside_values.append(method_data['upside_downside'])
+            
+            if len(upside_values) >= 2:
+                upside_std = statistics.stdev(upside_values)
+                if upside_std < 15:
+                    valuation_conf = 100
+                elif upside_std < 30:
+                    valuation_conf = 70
+                else:
+                    valuation_conf = 40
+            else:
+                valuation_conf = 50  # 数据不足，默认中等
+            
+            # 3. 综合置信度
+            confidence_score = (perspective_conf * 0.5 + valuation_conf * 0.5)
+            if confidence_score >= 80:
+                confidence = '高'
+            elif confidence_score >= 60:
+                confidence = '中'
+            else:
+                confidence = '低'
             
             if overall_score >= 80 and upside > 20:
                 recommendation = '强烈买入'
@@ -134,12 +222,24 @@ class BatchAnalyzer:
                 'key_forces': key_forces,
                 'biases': biases,
                 'summary': {
+                    # 原有综合评分
                     'overall_score': round(overall_score, 1),
                     'module_score': round(avg_module_score, 1),
                     'perspective_score': round(perspective_pct, 1),
                     'valuation_upside': round(upside, 1),
                     'recommendation': recommendation,
-                    'confidence': '高' if overall_score >= 70 else '中等' if overall_score >= 50 else '低'
+                    'confidence': confidence,  # 使用新计算的置信度
+                    
+                    # MSCI Barra 评分
+                    'barra_score': round(barra_score, 1),
+                    'barra_factors': {
+                        'quality': round(quality_score, 1),
+                        'growth': round(growth_score, 1),
+                        'value': round(value_score, 1),
+                        'sentiment': round(sentiment_score, 1),
+                        'macro': round(macro_score, 1),
+                        'esg': round(esg_score, 1)
+                    }
                 }
             }
             
@@ -542,7 +642,8 @@ class BatchAnalyzer:
             
             files = {}
             if 'html' in formats:
-                files['html'] = exporter.export_html(f"{ticker}_analysis.html")
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            files['html'] = exporter.export_html(f"{ticker}_analysis_{timestamp}.html")
             
             results[ticker] = files
         

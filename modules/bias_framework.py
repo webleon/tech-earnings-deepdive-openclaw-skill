@@ -274,9 +274,57 @@ class BiasFramework:
         }
     
     def _check_revenue_recognition(self) -> dict:
-        """检查收入确认异常"""
-        # 简化检查
-        return None  # 需要更多数据
+        """
+        检查收入确认异常
+        
+        红旗信号：
+        1. 应收账款增速 >> 收入增速（可能提前确认收入）
+        2. 应收账款/收入 > 30%（回款慢，可能渠道压货）
+        """
+        try:
+            # 获取数据
+            balance_sheet = self.data.get('balance_sheet', {})
+            financials = self.data.get('financials', {})
+            
+            accounts_receivable = balance_sheet.get('accounts_receivable', 0)
+            revenue = financials.get('total_revenue', 1)
+            revenue_growth = financials.get('revenue_growth_yoy', 0)
+            
+            # 计算应收账款/收入比率
+            receivables_ratio = (accounts_receivable / revenue * 100) if revenue > 0 else 0
+            
+            # 计算应收账款增长率（简化：假设去年应收 = 今年应收 / (1 + 收入增长率)）
+            # 注意：这是简化估算，精确计算需要历史数据
+            if revenue_growth > 0:
+                implied_receivables_growth = revenue_growth  # 假设应收与收入同步增长
+            else:
+                implied_receivables_growth = 0
+            
+            # 红旗 1: 应收账款/收入 > 30%
+            if receivables_ratio > 30:
+                severity = '高' if receivables_ratio > 50 else '中'
+                return {
+                    'name': '收入确认异常',
+                    'description': f'应收账款占收入{receivables_ratio:.1f}%（警戒线 30%）',
+                    'risk': severity,
+                    'data': {
+                        'accounts_receivable': accounts_receivable,
+                        'revenue': revenue,
+                        'receivables_ratio': round(receivables_ratio, 1)
+                    },
+                    'analysis': f'应收账款占收入{receivables_ratio:.1f}%，{"⚠️ 偏高" if receivables_ratio > 30 else "✅ 合理"}。可能渠道压货或回款放缓。'
+                }
+            
+            # 红旗 2: 应收账款增速 >> 收入增速（需要历史数据，当前简化检查）
+            # 如果有历史数据，可以添加：
+            # if receivables_growth > revenue_growth * 2:
+            #     return {...}
+            
+            return None  # 未触发红旗
+            
+        except Exception as e:
+            print(f"⚠️ 检查收入确认异常失败：{e}")
+            return None
     
     def _check_gaap_gap(self) -> dict:
         """检查 GAAP 与 Non-GAAP 利润差异"""
@@ -339,9 +387,73 @@ class BiasFramework:
         return None
     
     def _check_insider_trading(self) -> dict:
-        """检查内部人交易"""
-        # 需要 SEC Form 4 数据
-        return None
+        """检查内部人交易（财务红旗）"""
+        try:
+            insider_data = self.data.get('insider_trades', {})
+            if not insider_data:
+                return None
+            
+            summary = insider_data.get('summary', {})
+            buy_count = summary.get('buy_count', 0)
+            sell_count = summary.get('sell_count', 0)
+            net_value = summary.get('net_value', 0)
+            sentiment = summary.get('insider_sentiment', 'neutral')
+            
+            # 判断是否触发红旗
+            # 红旗条件：大规模净卖出（卖出 > 买入 * 2，根据公开资料调整）
+            if sell_count > 0 and buy_count > 0 and sell_count > buy_count * 2:
+                severity = '高' if sell_count > buy_count * 4 else '中'
+                ratio = sell_count / buy_count if buy_count > 0 else float('inf')
+                return {
+                    'name': '内部人交易 - 大规模减持',
+                    'description': f'最近内部人交易：买入{buy_count}次 vs 卖出{sell_count}次，净卖出${abs(net_value)/1e6:.1f}M',
+                    'risk': severity,
+                    'data': {
+                        'buy_count': buy_count,
+                        'sell_count': sell_count,
+                        'net_value': net_value,
+                        'sentiment': sentiment,
+                        'sell_buy_ratio': round(ratio, 2)
+                    },
+                    'analysis': f'卖出/买入比率{ratio:.1f}x，{"⚠️ 红旗：内部人大规模减持" if ratio > 2 else "✅ 正常"}'
+                }
+            
+            # 只有卖出没有买入（极端情况）
+            elif sell_count > 0 and buy_count == 0:
+                return {
+                    'name': '内部人交易 - 只有卖出',
+                    'description': f'最近内部人交易：0 次买入 vs {sell_count}次卖出，净卖出${abs(net_value)/1e6:.1f}M',
+                    'risk': '高',
+                    'data': {
+                        'buy_count': buy_count,
+                        'sell_count': sell_count,
+                        'net_value': net_value,
+                        'sentiment': sentiment
+                    },
+                    'analysis': f'⚠️ 红旗：内部人只有卖出没有买入，净卖出${abs(net_value)/1e6:.1f}M'
+                }
+            
+            # 净卖出情绪（低风险提示）
+            elif sentiment == 'bearish' and sell_count > buy_count:
+                ratio = sell_count / buy_count if buy_count > 0 else float('inf')
+                return {
+                    'name': '内部人交易 - 净卖出',
+                    'description': f'内部人情绪：看空（买入{buy_count}次 vs 卖出{sell_count}次）',
+                    'risk': '低',
+                    'data': {
+                        'buy_count': buy_count,
+                        'sell_count': sell_count,
+                        'sentiment': sentiment
+                    },
+                    'analysis': f'内部人情绪看空，卖出/买入比率{ratio:.1f}x，建议关注'
+                }
+            
+            # 没有触发红旗
+            return None
+            
+        except Exception as e:
+            print(f"⚠️ 检查内部人交易失败：{e}")
+            return None
     
     def _check_capex(self) -> dict:
         """检查资本支出"""
@@ -496,18 +608,13 @@ class BiasFramework:
             }
         return None
     
-    def _check_stock_dilution(self) -> dict:
-        """检查股票期权稀释"""
-        # 需要 SBC 数据
-        return None
-    
     def _check_cac_inflection(self) -> dict:
         """检查客户获取成本拐点"""
-        # 需要 CAC 数据
+        # 需要 CAC 数据，暂时返回 None
         return None
     
     def _check_regulatory_risk(self) -> dict:
-        """检查监管风险"""
+        """检查监管尾部风险"""
         # 大型科技公司通常有监管风险
         market_cap = self.price.get('market_cap', 0)
         

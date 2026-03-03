@@ -11,8 +11,15 @@ cache/
 # 输出报告（测试用）
 output/
 
+# 日志
+log/
+
 # 临时文件
 *.tmp
+*.log
+
+# macOS
+.DS_Store
 
 # 本地配置（含敏感信息）
 config.local.json

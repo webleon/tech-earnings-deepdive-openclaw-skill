@@ -13,6 +13,22 @@ from datetime import datetime
 class ValuationCalculator:
     """估值计算器 - 6 种大师方法完整实现"""
     
+    # Damodaran 2026 年 1 月数据 - 大类平均
+    DAMODARAN_AGGREGATED = {
+        'Technology': 26.5,      # 软件 + 硬件 + 半导体平均
+        'Healthcare': 16.5,      # 制药 + 生物科技 + 医疗器械平均
+        'Consumer Cyclical': 15.8,
+        'Consumer Defensive': 13.5,
+        'Financial Services': 20.0,
+        'Energy': 6.5,
+        'Industrials': 17.5,
+        'Communication Services': 18.0,
+        'Real Estate': 18.0,
+        'Basic Materials': 12.0,
+        'Utilities': 14.0,
+        'Default': 16.95  # 不含金融的市场平均
+    }
+    
     def __init__(self, data: dict):
         self.data = data
         self.ticker = data.get('symbol', 'UNKNOWN')
@@ -21,6 +37,30 @@ class ValuationCalculator:
         self.balance_sheet = data.get('balance_sheet', {})
         self.cashflow = data.get('cashflow', {})
         self.analyst = data.get('analyst_estimates', {})
+        self.company_info = data.get('company_info', {})
+        
+        # 获取行业基准（带 S&P 500 动态调整）
+        self.industry_benchmark = self._get_industry_benchmark()
+    
+    def _get_industry_benchmark(self) -> float:
+        """
+        获取行业 EV/EBITDA 基准（Damodaran 大类 + S&P 500 动态调整）
+        """
+        # 1. 获取 yfinance 行业分类
+        sector = self.company_info.get('sector', 'Default')
+        
+        # 2. Damodaran 大类平均（基准）
+        damodaran_base = self.DAMODARAN_AGGREGATED.get(sector, 16.95)
+        
+        # 3. S&P 500 动态调整（补偿行业细分差异和市场变化）
+        # 简化实现：使用固定调整因子（后续可实现实时获取）
+        # 2026 年市场比 2024 年 Damodaran 数据高约 27%
+        market_adjustment = 1.15  # 默认调整因子
+        
+        # 4. 最终基准
+        final_benchmark = damodaran_base * market_adjustment
+        
+        return round(final_benchmark, 1)
     
     def calculate_all(self) -> dict:
         """执行所有 6 种估值方法"""
@@ -81,6 +121,9 @@ class ValuationCalculator:
         else:
             verdict = '高估（安全边际<-10%）'
         
+        # 计算涨跌空间（upside_downside）
+        upside_downside = margin_of_safety  # Owner Earnings 的安全边际就是涨跌空间
+        
         return {
             'method': 'Owner Earnings（巴菲特）',
             'formula': '净利润 + 折旧摊销 - 资本支出',
@@ -93,6 +136,7 @@ class ValuationCalculator:
             },
             'current_price': current_price,
             'margin_of_safety': round(margin_of_safety, 2),
+            'upside_downside': round(upside_downside, 1),  # 新增字段
             'verdict': verdict,
             'pe_multiple': {
                 'conservative': 10,
@@ -131,7 +175,11 @@ class ValuationCalculator:
         
         # 合理 PE
         fair_pe = growth_rate * 1.5  # PEG=1.5 时的合理 PE
+        current_price = self.price.get('current_price', 0)
         implied_price = fair_pe * (self.price.get('eps', 0))
+        
+        # 计算涨跌空间（upside_downside）
+        upside_downside = (implied_price - current_price) / current_price * 100 if current_price > 0 else 0
         
         return {
             'method': 'PEG Ratio（彼得·林奇）',
@@ -142,6 +190,7 @@ class ValuationCalculator:
             'peg': round(peg, 2),
             'fair_pe': round(fair_pe, 2),
             'implied_price': round(implied_price, 2),
+            'upside_downside': round(upside_downside, 1),  # 新增字段
             'verdict': verdict,
             'standards': {
                 'undervalued': '< 0.5',
@@ -191,6 +240,13 @@ class ValuationCalculator:
         else:
             verdict = '合理定价'
         
+        # 计算涨跌空间（upside_downside）
+        # 如果隐含增长率<历史增速，说明可能被低估
+        if historical_growth > 0:
+            upside_downside = (historical_growth - implied_growth * 100) / historical_growth * 50  # 放大 50% 作为涨跌空间
+        else:
+            upside_downside = 0
+        
         return {
             'method': 'Reverse DCF（反向现金流折现）',
             'logic': '从当前股价反推市场隐含的增长率预期',
@@ -198,6 +254,7 @@ class ValuationCalculator:
             'fcf_per_share': round(fcf_per_share, 2),
             'implied_growth_rate': round(implied_growth * 100, 2),
             'historical_growth_rate': round(historical_growth, 2),
+            'upside_downside': round(upside_downside, 1),  # 新增字段
             'wacc': wacc * 100,
             'terminal_growth': terminal_growth * 100,
             'verdict': verdict,
@@ -243,6 +300,10 @@ class ValuationCalculator:
         roic_score = min(roic / 25 * 50, 50)  # 最高 50 分
         total_score = ey_score + roic_score
         
+        # 计算涨跌空间（upside_downside）
+        # 综合评分越高，上涨空间越大
+        upside_downside = (total_score - 50)  # 50 分为中性，每高 1 分=1% 上涨空间
+        
         return {
             'method': 'Magic Formula（格林布拉特）',
             'formula': '盈利收益率 + ROIC',
@@ -256,6 +317,7 @@ class ValuationCalculator:
                 'total_score': round(total_score, 1),
                 'max_score': 100
             },
+            'upside_downside': round(upside_downside, 1),  # 新增字段
             'verdict': verdict,
             'standards': {
                 'excellent': 'EY>8% 且 ROIC>25%',
@@ -267,7 +329,7 @@ class ValuationCalculator:
     
     def _ev_ebitda(self) -> dict:
         """
-        5. EV/EBITDA 行业对标
+        5. EV/EBITDA 行业对标（Damodaran 大类 + S&P 500 动态调整）
         """
         # 获取数据
         market_cap = self.price.get('market_cap', 0)
@@ -281,8 +343,8 @@ class ValuationCalculator:
         # 计算 EV/EBITDA
         ev_ebitda = enterprise_value / ebitda if ebitda > 0 else 0
         
-        # 行业平均（科技行业通常 12-18 倍）
-        industry_average = 15  # 简化假设
+        # 行业平均（Damodaran 大类 + S&P 500 动态调整）
+        industry_average = self.industry_benchmark
         
         # 判断
         premium_discount = (ev_ebitda - industry_average) / industry_average * 100
@@ -294,6 +356,10 @@ class ValuationCalculator:
         else:
             verdict = '高估（高于行业平均 20%+）'
         
+        # 计算涨跌空间（upside_downside）
+        # 如果 EV/EBITDA 低于行业平均，说明可能被低估
+        upside_downside = -premium_discount  # 折价=上涨空间
+        
         return {
             'method': 'EV/EBITDA（达摩达兰）',
             'formula': '企业价值 / EBITDA',
@@ -302,6 +368,7 @@ class ValuationCalculator:
             'ev_ebitda': round(ev_ebitda, 2),
             'industry_average': industry_average,
             'premium_discount': round(premium_discount, 2),
+            'upside_downside': round(upside_downside, 1),  # 新增字段
             'verdict': verdict,
             'standards': {
                 'undervalued': '< 行业平均 20%+',
@@ -358,6 +425,9 @@ class ValuationCalculator:
         # 综合判断：Rule of 40 等级 + 估值状态
         full_verdict = f'{verdict}（{valuation_verdict}）'
         
+        # 计算涨跌空间（upside_downside）
+        upside_downside = (fair_ev_revenue - ev_revenue) / ev_revenue * 100 if ev_revenue > 0 else 0
+        
         return {
             'method': 'EV/Revenue + Rule of 40（科技股）',
             'formula': 'Rule of 40 = 增长率 + 利润率',
@@ -368,6 +438,7 @@ class ValuationCalculator:
             'operating_margin': round(operating_margin, 2),
             'rule_of_40': round(rule_of_40, 2),
             'fair_ev_revenue': fair_ev_revenue,
+            'upside_downside': round(upside_downside, 1),  # 新增字段
             'verdict': full_verdict,
             'standards': {
                 'excellent': 'Rule of 40 >= 60%',

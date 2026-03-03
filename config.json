@@ -4,7 +4,7 @@
   "description": "科技股财报深度分析与多视角投资备忘录系统",
   "author": "Ruby & Star (Day1Global)",
   "default_stock": "NVDA",
-  "output_format": "markdown",
+  "output_format": "html",
   "cache_ttl_hours": 24,
   "enable_modules": "all",
   "enable_perspectives": "all",

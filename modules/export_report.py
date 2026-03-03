@@ -13,7 +13,7 @@ from pathlib import Path
 class ReportExporter:
     """专业投资报告导出器"""
     
-    def __init__(self, analysis_result: dict):
+    def __init__(self, analysis_result: dict, output_dir: str = 'output'):
         self.result = analysis_result
         self.ticker = analysis_result.get('ticker', 'UNKNOWN')
         self.data = analysis_result.get('data', {})
@@ -24,6 +24,8 @@ class ReportExporter:
         self.biases = analysis_result.get('biases', {})
         self.variant_view = analysis_result.get('variant_view', {})
         self.summary = analysis_result.get('summary', {})
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
     
     def export_html(self, filename: str = None) -> str:
         """导出 HTML 格式报告"""
@@ -174,6 +176,239 @@ class ReportExporter:
             margin: 15px 0;
         }
         
+        /* ========== 附录样式（更小更弱） ========== */
+        .appendix {
+            margin-top: 50px;
+            padding-top: 25px;
+            border-top: 2px dashed #ddd;
+            background: #fafafa;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .appendix h3 {
+            font-size: 15px;
+            color: #555;
+            border: none;
+            padding-left: 0;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        .appendix h4 {
+            font-size: 13px;
+            color: #666;
+            border: none;
+            padding-left: 0;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .appendix-section {
+            margin-bottom: 25px;
+        }
+        
+        /* 16 模块 Grid 布局 - 桌面端 4 列 */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .module-card {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: box-shadow 0.2s;
+        }
+        
+        .module-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .module-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .module-desc {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .module-standard {
+            font-size: 10px;
+            color: #666;
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+        
+        .module-standard .label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        /* 6 大视角 Grid 布局 - 桌面端 2 列 */
+        .perspectives-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+        
+        .perspective-card {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 18px;
+        }
+        
+        .perspective-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        
+        .perspective-header .reps {
+            font-weight: 400;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .perspective-dimensions {
+            font-size: 11px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .dimension-item {
+            margin: 6px 0;
+        }
+        
+        /* 移动端响应式 */
+        @media (max-width: 768px) {
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+            .perspectives-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 平板端响应式 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .modules-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .appendix-section td {
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            vertical-align: top;
+            font-size: 11px;
+            line-height: 1.6;
+            background: #f9f9f9;
+            white-space: normal;
+            width: auto;
+            text-align: left;
+        }
+        
+        .appendix-section td strong {
+            color: #333;
+            font-size: 12px;
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-align: left;
+        }
+        
+        .appendix-section td small {
+            color: #666;
+            font-size: 11px;
+            display: block;
+            margin: 5px 0;
+            text-align: left;
+        }
+        
+        /* 移动端响应式 - 卡片布局 */
+        @media (max-width: 768px) {
+            .modules-grid,
+            .perspectives-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .module-card,
+            .perspective-card {
+                margin-bottom: 15px;
+            }
+        }
+        
+        .appendix ul,
+        .appendix ol {
+            padding-left: 25px;
+            margin: 8px 0;
+        }
+        
+        .appendix li {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+        
+        .appendix ol > li > ul {
+            padding-left: 20px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .appendix ol > li > ul > li {
+            font-size: 11px;
+            color: #777;
+            margin: 3px 0;
+        }
+        
+        .appendix-disclaimer {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #fff8e1;
+            border: none;
+            border-top: 2px dashed #ffe082;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .appendix-disclaimer h4 {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 0;
+        }
+        
+        .appendix-disclaimer ul {
+            padding-left: 18px;
+            margin: 5px 0;
+        }
+        
+        .appendix-disclaimer li {
+            margin: 3px 0;
+            line-height: 1.4;
+        }
+        
+        /* ========== 卡片样式 ========== */
         .warning-box {
             background: #fff8e1;
             padding: 15px;
@@ -195,20 +430,6 @@ class ReportExporter:
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            margin: 15px 0;
-        }
-        
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin: 15px 0;
-        }
-        
-        .perspectives-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
             margin: 15px 0;
         }
         
@@ -256,22 +477,25 @@ class ReportExporter:
         # ========== 投资摘要 ==========
         html.append(self._generate_summary_section())
         
-        # ========== 16 模块分析 ==========
+        # ========== 财务模块分析（16 Modules） ==========
         html.append(self._generate_modules_section())
         
-        # ========== 6 大投资视角 ==========
+        # ========== 投资视角分析（6 Perspectives） ==========
         html.append(self._generate_perspectives_section())
         
-        # ========== Key Forces ==========
-        html.append(self._generate_key_forces_section())
-        
-        # ========== 估值矩阵 ==========
+        # ========== 估值方法矩阵（Valuation Matrix） ==========
         html.append(self._generate_valuation_section())
         
-        # ========== 反偏见框架 ==========
+        # ========== MSCI Barra 多因子分析（MSCI Barra Factors） ==========
+        html.append(self._generate_barra_section())
+        
+        # ========== 关键驱动力（Key Forces） ==========
+        html.append(self._generate_key_forces_section())
+        
+        # ========== 反偏见框架（Anti-Bias Framework） ==========
         html.append(self._generate_biases_section())
         
-        # ========== Pre-Mortem ==========
+        # ========== 失败预演（Pre-Mortem） ==========
         html.append(self._generate_premortem_section())
         
         # ========== 页脚 ==========
@@ -294,6 +518,7 @@ class ReportExporter:
         valuation_upside = summary.get('valuation_upside', 0)
         
         score_class = 'score-high' if score >= 70 else 'score-medium' if score >= 50 else 'score-low'
+        upside_class = 'score-high' if valuation_upside > 20 else 'score-medium' if valuation_upside > -20 else 'score-low'
         
         # 获取财务数据用于股票类型判断
         modules = self.modules
@@ -305,40 +530,88 @@ class ReportExporter:
         # 判断股票类型
         stock_type, stock_description = self._analyze_stock_type(pe, revenue_growth, dividend_yield, roe)
         
-        # 生成详细描述
-        description = f"本报告对 {self.ticker} 进行了全面的财务分析和投资价值评估。"
+        # ========== 生成详细描述（优化版：先总述→再分述→最后对比） ==========
         
-        if score >= 70:
-            description += f" 综合评分为{score:.1f}分，显示该公司整体表现优秀，在多个关键维度展现出强劲的竞争力和增长潜力。"
+        # 1. 总述报告内容
+        description = f"本报告对 {self.ticker} 进行了全面的财务分析和投资价值评估，涵盖财务模块分析（16 个维度）、投资视角分析（6 大哲学视角）、估值方法矩阵（6 种经典方法）、MSCI Barra 多因子分析（6 大因子）、关键驱动力识别、反偏见框架及失败预演等七大核心模块。"
+        
+        # 2. 综合评分描述
+        if score >= 80:
+            score_desc = "整体表现优秀，在多个关键维度展现出强劲的竞争力和增长潜力"
+        elif score >= 70:
+            score_desc = "整体表现良好，基本面稳健，具备较强投资价值"
         elif score >= 60:
-            description += f" 综合评分为{score:.1f}分，显示该公司整体表现良好，基本面稳健，具备一定投资价值，但需关注部分风险因素。"
+            score_desc = "整体表现中等，基本面稳健但存在部分风险因素"
         elif score >= 50:
-            description += f" 综合评分为{score:.1f}分，显示该公司整体表现一般，基本面存在分化，建议谨慎评估，重点关注风险因素。"
+            score_desc = "整体表现一般，基本面存在分化，建议谨慎评估"
         else:
-            description += f" 综合评分为{score:.1f}分，显示该公司整体表现较弱，基本面存在较多问题，风险因素较多，建议谨慎或回避。"
+            score_desc = "整体表现较弱，基本面存在较多问题，风险因素较多"
         
-        description += f" 基于综合分析，给予'<span class='{score_class}'>{recommendation}</span>'评级，置信度为{confidence}。"
+        description += f" 其中，综合评分（基于 16 个财务模块、6 大投资视角和估值空间的加权评分，并扣除财务红旗风险分）为<span class='{score_class}'>{score:.1f}分</span>，{score_desc}，给予'<span class='{score_class}'>{recommendation}</span>'评级。"
         
+        # 3. MSCI Barra 评分描述（与综合评分平行）
+        barra_score = summary.get('barra_score', 0)
+        barra_class = 'score-high' if barra_score >= 70 else 'score-medium' if barra_score >= 60 else 'score-low'
+        if barra_score >= 80:
+            barra_verdict = '强烈买入'
+            barra_desc = "多维度投资价值优秀，质量/成长/价值因子均衡突出"
+        elif barra_score >= 70:
+            barra_verdict = '买入'
+            barra_desc = "多维度投资价值良好，多数因子表现稳健"
+        elif barra_score >= 60:
+            barra_verdict = '持有'
+            barra_desc = "多维度投资价值中等，部分因子存在短板"
+        elif barra_score >= 50:
+            barra_verdict = '减持'
+            barra_desc = "多维度投资价值一般，质量/成长因子拖累明显"
+        else:
+            barra_verdict = '卖出'
+            barra_desc = "多维度投资价值较弱，多数因子表现不佳"
+        
+        barra_factors = summary.get('barra_factors', {})
+        description += f" MSCI Barra 多因子评分（基于质量、成长、价值、情绪、宏观、ESG 六大因子的加权评分）为<span class='{barra_class}'>{barra_score:.1f}分</span>，{barra_desc}，给予'<span class='{barra_class}'>{barra_verdict}</span>'评级（质量 {barra_factors.get('quality', 0):.1f}/成长 {barra_factors.get('growth', 0):.1f}/价值 {barra_factors.get('value', 0):.1f}/情绪 {barra_factors.get('sentiment', 0):.1f}/宏观 {barra_factors.get('macro', 0):.1f}/ESG {barra_factors.get('esg', 0):.1f}）。"
+        
+        # 4. 估值空间 + 置信度
+        confidence_class = 'score-high' if confidence == '高' else 'score-medium' if confidence == '中' else 'score-low'
         if abs(valuation_upside) > 20:
             if valuation_upside > 0:
-                description += f" 估值分析显示当前股价存在{valuation_upside:.1f}%的上涨空间，具备较强吸引力。"
+                description += f" 估值分析显示当前股价存在<span class='{upside_class}'>{valuation_upside:.1f}%</span>的上涨空间，具备较强吸引力，<span class='{confidence_class}'>置信度{confidence}</span>。"
             else:
-                description += f" 估值分析显示当前股价偏高，存在{abs(valuation_upside):.1f}%的回调风险。"
+                description += f" 估值分析显示当前股价偏高，存在<span class='{upside_class}'>{abs(valuation_upside):.1f}%</span>的回调风险，<span class='{confidence_class}'>置信度{confidence}</span>。"
         else:
-            description += f" 估值处于合理区间，估值风险可控。"
+            description += f" 估值处于合理区间（±20%），估值风险可控，<span class='{confidence_class}'>置信度{confidence}</span>。"
         
-        return f"""        <h2>📋 投资摘要</h2>
+        # 5. 两者对比分析 + 置信度和估值分析
+        score_diff = score - barra_score
+        if abs(score_diff) < 5:
+            comparison = "两者评分基本一致，结论相互印证"
+        elif score_diff >= 5:
+            comparison = f"综合评分略高于 MSCI Barra 评分{score_diff:.1f}分，主要差异来自财务模块和投资视角的正面贡献"
+        else:
+            comparison = f"MSCI Barra 评分略高于综合评分{abs(score_diff):.1f}分，主要差异来自多因子模型的正面评估"
+        
+        # 置信度分析
+        if confidence == '低':
+            conf_note = "但 6 大投资视角和 6 种估值方法分歧较大，置信度较低，建议谨慎参考。"
+        elif confidence == '高':
+            conf_note = "且 6 大投资视角和 6 种估值方法结论一致，置信度较高。"
+        else:
+            conf_note = "6 大投资视角和 6 种估值方法存在一定分歧，置信度中等。"
+        
+        description += f" 综合评分与 MSCI Barra 评分差异{abs(score_diff):.1f}分（{score:.1f} vs {barra_score:.1f}），{comparison}{conf_note}"
+        
+        return f"""        <h2>📋 投资摘要（Investment Summary）</h2>
         <div class="report-summary">
             <div class="summary-content">
                 <p>{description}</p>
-                <p style="margin-top: 15px;"><strong>股票类型：</strong>{stock_type}</p>
+                <p style="margin-top: 15px;"><strong>股票类型（Stock Type）：</strong>{stock_type}</p>
                 <p style="margin-top: 10px;"><strong>类型分析：</strong>{stock_description}</p>
                 <p style="margin-top: 15px;"><strong>关键指标说明：</strong></p>
                 <ul>
-                    <li><strong>综合评分：</strong>基于 16 个财务模块、6 大投资视角、6 种估值方法的综合评分，满分 100 分。≥70 分为优秀，60-70 分为良好，50-60 分为一般，<50 分为较弱。</li>
-                    <li><strong>投资建议：</strong>根据综合评分和估值分析给出的投资建议，包括强烈买入、买入、持有、减持、卖出五个等级。</li>
-                    <li><strong>置信度：</strong>反映分析结果的可靠程度，分为高、中、低三个等级，取决于数据完整性和一致性。</li>
-                    <li><strong>估值空间：</strong>基于 6 种估值方法的平均结果，显示当前股价相对于合理价值的涨跌空间百分比。</li>
+                    <li><strong>综合评分（Overall Score）：</strong>基于 16 个财务模块（50% 权重）、6 大投资视角（20% 权重）、估值空间（30% 权重）的加权评分，并扣除财务红旗风险分（高 -15/中 -8/ 低 -3）。评级分为五档：≥80 分强烈买入，70-80 分买入，60-70 分持有，50-60 分减持，<50 分卖出。</li>
+                    <li><strong>MSCI Barra 评分（Barra Score）：</strong>基于质量（30%）、成长（25%）、价值（20%）、情绪（10%）、宏观（10%）、ESG（5%）六大因子的加权评分。评级标准与综合评分一致（五档）。</li>
+                    <li><strong>置信度（Confidence）：</strong>基于 6 大投资视角分歧度和 6 种估值方法分歧度计算。分歧越小置信度越高，分歧越大置信度越低。分为高（标准差小）、中（标准差中等）、低（标准差大）三档。</li>
+                    <li><strong>估值空间（Valuation Upside）：</strong>基于 6 种估值方法的平均结果，显示当前股价相对于合理价值的涨跌空间百分比。>20% 为低估，±20% 为合理，<-20% 为高估。</li>
                 </ul>
             </div>
         </div>
@@ -347,7 +620,7 @@ class ReportExporter:
     def _generate_modules_section(self) -> str:
         """生成 16 模块分析部分 - 分析内容列显示具体数值"""
         html = []
-        html.append('        <h2>📊 模块分析</h2>')
+        html.append('        <h2>📊 财务模块分析（Financial Modules Analysis）</h2>')
         html.append('        <p>16 模块分析是系统的核心分析框架，覆盖收入质量、盈利能力、现金流、竞争格局等关键维度。每个模块都有独立的评分逻辑和检查清单，确保分析的全面性和深度。</p>')
         html.append('        <table>')
         html.append('            <thead>')
@@ -444,7 +717,7 @@ class ReportExporter:
     def _generate_perspectives_section(self) -> str:
         """生成 6 大投资视角部分 - 分析内容在核心问题下，评分和判断同行"""
         html = []
-        html.append('        <h2>💼 投资视角</h2>')
+        html.append('        <h2>💼 投资视角分析（Investment Perspectives Analysis）</h2>')
         html.append('        <p>整合 6 种截然不同的投资世界观，每种视角都有独特的评分维度（各 25 分，总分 100 分）和核心问题。通过多视角交叉验证，避免单一方法论的盲点。</p>')
         html.append('        <div class="perspectives-grid">')
         
@@ -486,9 +759,9 @@ class ReportExporter:
                 
                 html.append(f'            <div class="summary-box">')
                 html.append(f'                <h3>{name} <small>({reps})</small></h3>')
+                html.append(f'                <p><strong>总分：</strong><span class="{score_class}">{score:.1f}/100</span> &nbsp;&nbsp;&nbsp; <strong>判断：</strong>{verdict}</p>')
                 html.append(f'                <p><strong>核心问题：</strong>{question}</p>')
                 html.append(f'                <p><strong>评分维度：</strong><small>{scoring_text}</small></p>')
-                html.append(f'                <p><strong>总分：</strong><span class="{score_class}">{score:.1f}/100</span> &nbsp;&nbsp;&nbsp; <strong>判断：</strong>{verdict}</p>')
                 html.append(f'            </div>')
         
         html.append('        </div>')
@@ -496,14 +769,83 @@ class ReportExporter:
         
         return "\n".join(html)
     
+    def _generate_barra_section(self) -> str:
+        """生成 MSCI Barra 多因子分析部分"""
+        summary = self.summary
+        barra_score = summary.get('barra_score', 0)
+        barra_factors = summary.get('barra_factors', {})
+        
+        if not barra_factors:
+            return ''
+        
+        # 评级标准与综合评分投资建议一致（五档）
+        if barra_score >= 80:
+            barra_verdict = '强烈买入'
+            barra_class = 'score-high'
+        elif barra_score >= 70:
+            barra_verdict = '买入'
+            barra_class = 'score-high'
+        elif barra_score >= 60:
+            barra_verdict = '持有'
+            barra_class = 'score-medium'
+        elif barra_score >= 50:
+            barra_verdict = '减持'
+            barra_class = 'score-low'
+        else:
+            barra_verdict = '卖出'
+            barra_class = 'score-low'
+        
+        html = []
+        html.append('        <h2>📊 MSCI Barra 多因子分析（MSCI Barra Factors）</h2>')
+        html.append('        <p>参考 MSCI Barra 多因子模型的 6 大因子评估体系，通过质量、成长、价值、情绪、宏观、ESG 六个维度全面评估公司投资价值。</p>')
+        html.append('        <div class="report-summary">')
+        html.append(f'            <p><strong>MSCI Barra 综合评分：</strong><span class="{barra_class}">{barra_score:.1f}分</span></p>')
+        html.append(f'            <p><strong>MSCI Barra 评级：</strong><span class="{barra_class}">{barra_verdict}</span></p>')
+        html.append('        </div>')
+        html.append('        <table>')
+        html.append('            <thead>')
+        html.append('                <tr>')
+        html.append('                    <th>因子</th>')
+        html.append('                    <th>权重</th>')
+        html.append('                    <th>得分</th>')
+        html.append('                    <th>说明</th>')
+        html.append('                </tr>')
+        html.append('            </thead>')
+        html.append('            <tbody>')
+        
+        factors_desc = {
+            'quality': ('质量因子', '30%', 'ROE、毛利率、现金流稳定性等'),
+            'growth': ('成长因子', '25%', '收入增长、利润增长、研发效率等'),
+            'value': ('价值因子', '20%', 'PE、PB、EV/EBITDA 等估值指标'),
+            'sentiment': ('情绪因子', '10%', '分析师预期、筹码分布等'),
+            'macro': ('宏观因子', '10%', '行业政策、宏观环境等'),
+            'esg': ('ESG 因子', '5%', '环境、社会、治理责任')
+        }
+        
+        for key, (name, weight, desc) in factors_desc.items():
+            score = barra_factors.get(key, 0)
+            score_class = 'score-high' if score >= 70 else 'score-medium' if score >= 50 else 'score-low'
+            html.append(f'                <tr>')
+            html.append(f'                    <td>{name}</td>')
+            html.append(f'                    <td>{weight}</td>')
+            html.append(f'                    <td class="{score_class}">{score:.1f}</td>')
+            html.append(f'                    <td>{desc}</td>')
+            html.append(f'                </tr>')
+        
+        html.append('            </tbody>')
+        html.append('        </table>')
+        html.append('')
+        
+        return "\n".join(html)
+    
     def _generate_key_forces_section(self) -> str:
-        """生成 Key Forces 部分 - 分析内容在影响力上面"""
+        """生成关键驱动力部分"""
         if not self.key_forces:
             return ''
         
         html = []
-        html.append('        <h2>🎯 Key Forces</h2>')
-        html.append('        <p>自动识别决定公司未来价值的 1-3 个决定性力量，按影响力排序（0-10 分）。这些 Key Forces 是影响公司价值的最关键因素，需要重点关注。</p>')
+        html.append('        <h2>🎯 关键驱动力（Key Forces）</h2>')
+        html.append('        <p>自动识别决定公司未来价值的 1-3 个决定性力量，按影响力排序（0-10 分）。这些关键驱动力是影响公司价值的最关键因素，需要重点关注。</p>')
         html.append('        <div class="key-forces-grid">')
         
         force_descriptions = {
@@ -536,9 +878,9 @@ class ReportExporter:
         return "\n".join(html)
     
     def _generate_valuation_section(self) -> str:
-        """生成估值矩阵部分 - 方法和创始人合并，增加概念简述"""
+        """生成估值方法矩阵部分"""
         html = []
-        html.append('        <h2>💰 估值矩阵</h2>')
+        html.append('        <h2>💰 估值方法矩阵（Valuation Matrix）</h2>')
         html.append('        <p>集成 6 种经典估值方法，覆盖不同行业、不同发展阶段的企业估值需求。每种方法都有独特的视角和判断标准，综合使用可以避免单一方法的盲点。</p>')
         html.append('        <table>')
         html.append('            <thead>')
@@ -546,7 +888,8 @@ class ReportExporter:
         html.append('                    <th>方法（创始人）</th>')
         html.append('                    <th>概念简述</th>')
         html.append('                    <th>判断标准</th>')
-        html.append('                    <th>结果</th>')
+        html.append('                    <th>实际数值</th>')
+        html.append('                    <th>状态</th>')
         html.append('                </tr>')
         html.append('            </thead>')
         html.append('            <tbody>')
@@ -556,7 +899,7 @@ class ReportExporter:
             'peg': ('PEG Ratio', '彼得·林奇', '市盈率相对盈利增长比率', '<0.5 极具吸引力，0.5-1.0 有吸引力，1.0-1.5 合理，>2.0 昂贵'),
             'reverse_dcf': ('Reverse DCF', '逆向思维', '从当前股价反推市场隐含的增长率', '隐含增长<历史增速=低估，隐含增长>历史增速=高估'),
             'magic_formula': ('Magic Formula', '格林布拉特', '盈利收益率 +ROIC 排名的综合公式', '综合排名<10% 优秀，10-30% 良好，>30% 一般'),
-            'ev_ebitda': ('EV/EBITDA', '达摩达兰', '企业价值与息税折旧摊销前利润的比率', '低于行业平均 20%+=低估，±20% 合理，高于 20%+=高估'),
+            'ev_ebitda': ('EV/EBITDA', '达摩达兰', '企业价值与息税折旧摊销前利润的比率', '较行业平均折价>20%=低估，±20%=合理，溢价>20%=高估'),
             'ev_revenue_rule40': ('Rule of 40', 'SaaS 行业', '增长率 + 利润率≥40% 为优秀', '≥60% 优秀，40-60% 良好，20-40% 一般，<20% 较差')
         }
         
@@ -570,17 +913,45 @@ class ReportExporter:
                     peg_value = v.get('peg', 0)
                     actual_value = f"PEG={peg_value:.2f}" if peg_value else "N/A"
                 elif key == 'owner_earnings':
-                    multiple = v.get('multiple', 0)
-                    actual_value = f"倍数={multiple:.1f}" if multiple else "N/A"
+                    # 显示 Owner Earnings、合理价值区间、当前股价、安全边际
+                    oe_value = v.get('owner_earnings_billions', 0)
+                    fair_range = v.get('fair_value_range', {})
+                    current = v.get('current_price', 0)
+                    margin = v.get('margin_of_safety', 0)
+                    if oe_value and fair_range:
+                        actual_value = f"所有者收益=${oe_value:.1f}B，合理价值=${fair_range.get('low', 0):.0f}-${fair_range.get('high', 0):.0f}，现价=${current:.0f}，安全边际={margin:.1f}%"
+                    else:
+                        actual_value = "N/A"
                 elif key == 'reverse_dcf':
-                    implied_growth = v.get('implied_growth', 0) * 100
-                    actual_value = f"隐含增长={implied_growth:.1f}%" if implied_growth else "N/A"
+                    # 显示隐含增长率
+                    implied_growth = v.get('implied_growth_rate', 0)
+                    historical = v.get('historical_growth_rate', 0)
+                    if implied_growth:
+                        actual_value = f"隐含增长={implied_growth:.1f}% vs 历史={historical:.1f}%"
+                    else:
+                        actual_value = "N/A"
                 elif key == 'magic_formula':
-                    rank = v.get('rank', 0)
-                    actual_value = f"排名={rank:.1f}%" if rank else "N/A"
+                    # 显示 EY、ROIC、综合得分
+                    ey = v.get('earnings_yield', 0)
+                    roic = v.get('roic', 0)
+                    scoring = v.get('scoring', {})
+                    total_score = scoring.get('total_score', 0)
+                    if total_score:
+                        actual_value = f"EY={ey:.1f}%，ROIC={roic:.1f}%，综合得分={total_score:.1f}/100"
+                    else:
+                        actual_value = "N/A"
                 elif key == 'ev_ebitda':
+                    # 显示企业价值、EBITDA、EV/EBITDA、行业平均、溢价/折价
+                    ev = v.get('enterprise_value', 0)
+                    ebitda = v.get('ebitda', 0)
                     ev_ebitda = v.get('ev_ebitda', 0)
-                    actual_value = f"EV/EBITDA={ev_ebitda:.1f}x" if ev_ebitda else "N/A"
+                    industry = v.get('industry_average', 0)
+                    premium = v.get('premium_discount', 0)
+                    if ev_ebitda:
+                        sign = '+' if premium > 0 else ''
+                        actual_value = f"EV=${ev:.1f}B，EBITDA=${ebitda:.1f}B，EV/EBITDA={ev_ebitda:.1f}x，行业={industry:.1f}x，溢价{sign}{premium:.1f}%"
+                    else:
+                        actual_value = "N/A"
                 elif key == 'ev_revenue_rule40':
                     rule_of_40 = v.get('rule_of_40', 0)
                     # rule_of_40 已经是百分比，不需要再乘以 100
@@ -588,16 +959,20 @@ class ReportExporter:
                 else:
                     actual_value = 'N/A'
                 
-                # 构建结果列：判断 + 实际数值
-                result_text = f'{verdict}'
-                if actual_value and actual_value != 'N/A':
-                    result_text += f'<br><small>（{actual_value}）</small>'
+                # 确定状态列的样式
+                if '低估' in verdict or '买入' in verdict or '优秀' in verdict or '极具吸引力' in verdict:
+                    status_class = 'score-high'
+                elif '高估' in verdict or '卖出' in verdict or '较差' in verdict or '昂贵' in verdict:
+                    status_class = 'score-low'
+                else:
+                    status_class = 'score-medium'
                 
                 html.append('                <tr>')
                 html.append(f'                    <td><strong>{name}</strong><br><small>{founder}</small></td>')
                 html.append(f'                    <td>{concept}</td>')
                 html.append(f'                    <td>{criteria}</td>')
-                html.append(f'                    <td>{result_text}</td>')
+                html.append(f'                    <td>{actual_value}</td>')
+                html.append(f'                    <td class="{status_class}">{verdict}</td>')
                 html.append('                </tr>')
         
         html.append('            </tbody>')
@@ -611,7 +986,7 @@ class ReportExporter:
         biases = self.biases
         html = []
         
-        html.append('        <h2>🧠 反偏见框架</h2>')
+        html.append('        <h2>🧠 反偏见框架（Anti-Bias Framework）</h2>')
         html.append('        <p>通过系统化的检查清单，帮助识别和克服认知偏见、财务红旗和科技行业特有盲区。</p>')
         
         # 认知偏见
@@ -679,9 +1054,9 @@ class ReportExporter:
         
         all_red_flags = [
             ('GAAP vs Non-GAAP', '检查 GAAP 与 Non-GAAP 利润差异，SBC 占比是否过高', f'差异={gaap_gap:.1f}%，SBC/收入={sbc_ratio:.1f}%', '差异<50% 且 SBC/收入<15% 为正常'),
-            ('收入确认异常', '检查收入确认政策是否激进，递延收入趋势是否异常', f'递延收入/收入={financials.get("deferred_revenue_ratio", "N/A")}', '递延收入/收入<10% 为正常'),
+            ('收入确认异常', '检查收入确认政策是否激进，递延收入趋势是否异常', '递延收入/收入=需要 10-K 数据', '递延收入/收入<10% 为正常'),
             ('应收账款异常', '检查应收账款增速是否超过收入增速', f'应收/收入={receivables_ratio:.1f}%', '应收/收入<30% 为正常'),
-            ('内部人交易', '检查高管是否大量抛售股票', f'净卖出/总股本={financials.get("insider_selling_ratio", "N/A")}', '净卖出/总股本<1% 为正常'),
+            ('内部人交易', '检查高管是否大量抛售股票', f'净卖出/总股本={financials.get("insider_selling_ratio", 0):.4f}%', '净卖出/总股本<1% 为正常'),
             ('资本支出暴增', '检查资本支出占收入比例是否异常高', f'CapEx/收入={capex_ratio:.1f}%', 'CapEx/收入<20% 为正常'),
             ('现金流背离', '检查利润为正但现金流为负的情况', f'经营现金流/净利润={cash_flow_ratio:.2f}', '经营现金流/净利润>0.8 为正常'),
             ('负债结构恶化', '检查负债率和流动比率是否恶化', f'负债率={debt_ratio:.2f}, 流动比率={current_ratio:.2f}', '负债率<1 且流动比率>1.5 为正常')
@@ -694,8 +1069,8 @@ class ReportExporter:
         html.append('                <tr>')
         html.append('                    <th>红旗项目</th>')
         html.append('                    <th>检查内容</th>')
+        html.append('                    <th>判断标准</th>')
         html.append('                    <th>实际数值</th>')
-        html.append('                    <th>正常范围</th>')
         html.append('                    <th>状态</th>')
         html.append('                </tr>')
         html.append('            </thead>')
@@ -717,8 +1092,8 @@ class ReportExporter:
             html.append(f'                <tr>')
             html.append(f'                    <td>{flag_name}</td>')
             html.append(f'                    <td>{description}</td>')
-            html.append(f'                    <td>{actual_value}</td>')
             html.append(f'                    <td>{normal_range}</td>')
+            html.append(f'                    <td>{actual_value}</td>')
             html.append(f'                    <td class="{status_class}">{status}</td>')
             html.append(f'                </tr>')
         
@@ -730,9 +1105,9 @@ class ReportExporter:
         return "\n".join(html)
     
     def _generate_premortem_section(self) -> str:
-        """生成 Pre-Mortem 部分 - 每个问题根据当前报告举例说明"""
+        """生成失败预演部分"""
         html = []
-        html.append('        <h2>💀 Pre-Mortem（事前尸检）</h2>')
+        html.append('        <h2>💀 失败预演（Pre-Mortem）</h2>')
         html.append('        <p>强大的逆向思维工具，通过假设投资已失败，倒推失败原因，提前识别风险。</p>')
         html.append('        <div class="warning-box">')
         html.append('            <p><strong>核心问题：</strong></p>')
@@ -755,6 +1130,114 @@ class ReportExporter:
         
         html.append('            </ul>')
         html.append('        </div>')
+        html.append('')
+        
+        # 添加备注部分 - 包含 16 模块和投资视角的评分维度说明
+        html.append('        <div class="appendix">')
+        html.append('            <h3>📝 备注</h3>')
+        
+        # 16 模块分析评分说明（CSS Grid 卡片布局）
+        html.append('            <div class="appendix-section">')
+        html.append('                <h4>16 模块分析评分维度说明（每项 0-100 分）</h4>')
+        html.append('                <div class="modules-grid">')
+        
+        modules_data = [
+            ('A', '收入质量', '评估收入规模、增长率、毛利率', '增长>20% 且毛利>40%', '增长 10-20% 且毛利 20-40%', '增长<10% 或毛利<20%'),
+            ('B', '盈利能力', '评估净利率、ROE、运营利润率', '净利率>20% 且 ROE>20%', '净利率 10-20% 且 ROE 10-20%', '净利率<10% 或 ROE<10%'),
+            ('C', '现金流', '评估经营现金流、自由现金流', 'FCF 利润率>20%', '10-20%', '<10%'),
+            ('D', '前瞻指引', '评估分析师目标价、上涨空间', '上涨空间>30%', '10-30%', '<10%'),
+            ('E', '竞争格局', '评估毛利率（护城河指标）', '毛利率>60%', '40-60%', '<40%'),
+            ('F', '核心 KPI', '评估收入增长、利润增长', '双增长>20%', '10-20%', '<10%'),
+            ('G', '产品与新业务', '评估研发投入占比', '研发/收入>15%', '5-15%', '<5%'),
+            ('H', '合作伙伴生态', '评估应收账款占收入比', '<10%', '10-30%', '>30%'),
+            ('I', '高管团队', '评估 CEO、员工、管理层', '稳定且经验丰富', '一般', '频繁变动'),
+            ('J', '宏观政策', '评估行业、板块、宏观', '顺风行业', '中性', '逆风'),
+            ('K', '估值模型', '评估 PE、PB 等指标', 'PE<15 且 PB<3', 'PE 15-30 且 PB 3-6', 'PE>30 或 PB>6'),
+            ('L', '筹码分布', '评估分析师评级、买入比', '买入>80%', '50-80%', '<50%'),
+            ('M', '长期监控变量', '5 个关键指标评估', '5 个积极', '3-4 个积极', '<3 个'),
+            ('N', '研发效率', '评估研发投入和产出', '研发/收入>15%', '5-15%', '<5% 或无产出'),
+            ('O', '会计质量', '评估流动比率、负债率', '流动>1.5 且负债<0.5', '流动 1-1.5 且负债 0.5-1', '流动<1 或负债>1'),
+            ('P', 'ESG 筛查', '评估环境、社会、治理', 'ESG 评级高', '中等', '低')
+        ]
+        
+        for code, name, desc, excellent, good, poor in modules_data:
+            html.append('                    <div class="module-card">')
+            html.append(f'                        <div class="module-header">{code}. {name}</div>')
+            html.append(f'                        <div class="module-desc">{desc}</div>')
+            html.append(f'                        <div class="module-standard"><span class="label">优秀：</span>{excellent}</div>')
+            html.append(f'                        <div class="module-standard"><span class="label">良好：</span>{good}</div>')
+            html.append(f'                        <div class="module-standard"><span class="label">一般：</span>{poor}</div>')
+            html.append('                    </div>')
+        
+        html.append('                </div>')
+        html.append('            </div>')
+        
+        # 投资视角评分说明（CSS Grid 卡片布局）
+        html.append('            <div class="appendix-section">')
+        html.append('                <h4>6 大投资视角评分维度说明（每项 0-100 分，4 个维度各 25 分）</h4>')
+        html.append('                <div class="perspectives-grid">')
+        
+        perspectives_data = [
+            ('1', '质量复利', '巴菲特/芒格', [
+                '护城河（25 分）：评估竞争优势的可持续性，如品牌、网络效应、转换成本、规模优势',
+                'ROE（25 分）：股东权益回报率，评估公司用股东资金赚钱的效率，>15% 为优秀',
+                '自由现金流（25 分）：评估真实现金创造能力，排除会计调整，反映可分配给股东的现金',
+                '管理层（25 分）：评估 CEO 能力、资本配置决策、股东友好度、过往记录'
+            ]),
+            ('2', '想象力成长', 'Baillie Gifford/ARK', [
+                '市场空间（25 分）：评估 TAM（总可触达市场）规模，是否有 10 倍增长潜力',
+                '创新能力（25 分）：评估技术创新、产品迭代、研发投入、专利壁垒',
+                '成长速度（25 分）：评估收入/利润增长率，是否持续>20% 高增长',
+                '长期潜力（25 分）：评估 5-10 年发展愿景、战略清晰度、执行能力'
+            ]),
+            ('3', '基本面多空', 'Tiger Cubs', [
+                '相对价值（25 分）：评估与同行业/历史估值对比，是否低估或高估',
+                '催化剂（25 分）：评估近期可能推动股价的事件，如财报、产品发布、政策变化',
+                '风险收益（25 分）：评估上涨空间 vs 下跌风险，风险收益比是否>3:1',
+                '做空机会（25 分）：评估是否存在明显高估、财务造假、业务恶化等做空信号'
+            ]),
+            ('4', '深度价值', 'Klarman/Marks', [
+                '安全边际（25 分）：评估股价低于内在价值的程度，>30% 为理想',
+                '资产价值（25 分）：评估账面价值、重置成本、净资产价值',
+                '逆向机会（25 分）：评估市场情绪是否过度悲观，是否存在逆向投资机会',
+                '清算价值（25 分）：评估公司清算时股东能收回的价值，是否高于当前市值'
+            ]),
+            ('5', '催化剂驱动', 'Tepper/Ackman', [
+                '催化剂强度（25 分）：评估 6-18 个月内催化剂的确定性和影响力',
+                'activist 机会（25 分）：评估激进投资者介入推动变革的可能性',
+                '重组潜力（25 分）：评估业务重组、资产剥离、分拆上市的可能性',
+                '并购可能（25 分）：评估被收购或并购他人的可能性和协同效应'
+            ]),
+            ('6', '宏观战术', 'Druckenmiller', [
+                '宏观环境（25 分）：评估 GDP 增长、利率、通胀、政策环境是否有利',
+                '流动性（25 分）：评估市场流动性、信贷环境、资金成本',
+                '行业轮动（25 分）：评估当前行业周期位置，是否处于上升期',
+                '趋势（25 分）：评估市场趋势、资金流向、动量因素'
+            ])
+        ]
+        
+        for num, name, reps, dimensions in perspectives_data:
+            html.append('                    <div class="perspective-card">')
+            html.append(f'                        <div class="perspective-header">{num}. {name} <span class="reps">（{reps}）</span></div>')
+            html.append('                        <div class="perspective-dimensions">')
+            for dim in dimensions:
+                html.append(f'                            <div class="dimension-item">• {dim}</div>')
+            html.append('                        </div>')
+            html.append('                    </div>')
+        
+        html.append('                </div>')
+        html.append('            </div>')
+        html.append('        </div>')
+        html.append('        <div class="appendix-disclaimer">')
+        html.append('            <h4>⚠️ 免责声明</h4>')
+        html.append('            <ul>')
+        html.append('                <li>本报告仅供参考，不构成投资建议</li>')
+        html.append('                <li>评分基于历史数据和公开信息，不保证未来表现</li>')
+        html.append('                <li>投资有风险，决策需谨慎，建议咨询专业理财顾问</li>')
+        html.append('                <li>部分数据可能存在延迟或误差，请以官方财报为准</li>')
+        html.append('            </ul>')
+        html.append('        </div>')
+        html.append('    </div>')
         html.append('')
         
         return "\n".join(html)

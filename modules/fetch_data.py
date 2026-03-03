@@ -14,6 +14,15 @@ import numpy as np
 from datetime import datetime, timedelta
 from pathlib import Path
 
+# edgartools for SEC Form 4 (insider trades)
+try:
+    from edgar import Company, set_identity
+    set_identity("Tech Earnings Deepdive script@example.com")
+    EDGAR_AVAILABLE = True
+except ImportError:
+    EDGAR_AVAILABLE = False
+    print("⚠️ edgartools not installed. Run: pip install edgartools")
+
 # 缓存配置
 CACHE_DIR = Path(__file__).parent / '..' / 'cache'
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -167,6 +176,16 @@ class StockDataFetcher:
             dilution_rate = shares['change_rate']
             sbc_to_revenue_ratio = (sbc / revenue) * 100 if revenue > 0 else 0
             
+            # 计算应收账款/收入比率
+            balance_sheet = self.stock.balance_sheet
+            accounts_receivable = get_latest(balance_sheet.loc['Accounts Receivable']) if 'Accounts Receivable' in balance_sheet.index else 0
+            receivables_ratio = (accounts_receivable / revenue * 100) if revenue > 0 else 0
+            
+            # 计算内部人卖出/总股本比率
+            insider_trades = self.get_insider_trades()
+            insider_selling_shares = sum(t.get('shares', 0) for t in insider_trades.get('recent_trades', []) if t.get('direction') == 'sell')
+            insider_selling_ratio = (insider_selling_shares / shares['current'] * 100) if shares['current'] > 0 else 0
+            
             return {
                 'total_revenue': revenue,
                 'cost_of_revenue': get_latest(financials.loc['Cost Of Revenue']) if 'Cost Of Revenue' in financials.index else 0,
@@ -181,6 +200,10 @@ class StockDataFetcher:
                 'shares_outstanding': shares['current'],
                 'shares_dilution_rate': dilution_rate,
                 'sbc_to_revenue_ratio': sbc_to_revenue_ratio,
+                # 新增指标
+                'accounts_receivable': accounts_receivable,
+                'receivables_ratio': receivables_ratio,
+                'insider_selling_ratio': insider_selling_ratio,
                 # 增长率计算
                 'revenue_growth_yoy': self._calculate_growth(financials.loc['Total Revenue']) if 'Total Revenue' in financials.index else 0,
                 'net_income_growth_yoy': self._calculate_growth(financials.loc['Net Income']) if 'Net Income' in financials.index else 0
@@ -261,6 +284,180 @@ class StockDataFetcher:
             print(f"⚠️ 获取分析师预期失败：{e}")
             return {}
     
+    def get_insider_trades(self) -> dict:
+        """获取内部人交易数据（SEC Form 4）"""
+        if not EDGAR_AVAILABLE:
+            print("⚠️ edgartools 未安装，跳过内部人交易数据")
+            return {}
+        
+        try:
+            print(f"📊 获取 {self.ticker} 内部人交易数据...")
+            company = Company(self.ticker)
+            
+            # 获取最近 10 条 Form 4 记录
+            filings = company.get_filings(form="4")
+            if not filings or len(filings) == 0:
+                print("⚠️ 未找到 Form 4 记录")
+                return {}
+            
+            recent_filings = filings[:10]  # 最近 10 条
+            
+            insider_trades = []
+            total_buy_value = 0
+            total_sell_value = 0
+            buy_count = 0
+            sell_count = 0
+            
+            for filing in recent_filings:
+                try:
+                    form4 = filing.obj()
+                    insider_name = form4.insider_name if hasattr(form4, 'insider_name') else 'Unknown'
+                    reporting_period = str(form4.reporting_period) if hasattr(form4, 'reporting_period') else ''
+                    
+                    # 获取交易活动
+                    activities = form4.get_transaction_activities() if hasattr(form4, 'get_transaction_activities') else []
+                    
+                    for txn in activities:
+                        # 提取交易信息
+                        txn_code = getattr(txn, 'code', '')
+                        shares = getattr(txn, 'shares', 0) or 0
+                        value = getattr(txn, 'value', 0) or 0
+                        price = getattr(txn, 'price_per_share', 0) or 0
+                        txn_type = getattr(txn, 'transaction_type', '')
+                        
+                        # 判断买卖方向
+                        direction = 'other'
+                        if txn_code in ['P', 'A', 'M'] or 'purchase' in txn_type.lower() or 'award' in txn_type.lower():
+                            direction = 'buy'
+                            buy_count += 1
+                            total_buy_value += value
+                        elif txn_code in ['S', 'D', 'F'] or 'sale' in txn_type.lower() or 'disposal' in txn_type.lower():
+                            direction = 'sell'
+                            sell_count += 1
+                            total_sell_value += value
+                        
+                        trade = {
+                            'filing_date': str(filing.filing_date),
+                            'transaction_date': str(reporting_period),
+                            'insider_name': str(insider_name),
+                            'transaction_type': str(txn_type),
+                            'transaction_code': str(txn_code),
+                            'shares': int(shares) if shares else 0,
+                            'price_per_share': float(price) if price and price > 0 else None,
+                            'total_value': float(value) if value else 0,
+                            'direction': direction
+                        }
+                        insider_trades.append(trade)
+                        
+                except Exception as e:
+                    print(f"⚠️ 解析单条 Form 4 失败：{e}")
+                    continue
+            
+            # 计算净买卖
+            net_value = total_buy_value - total_sell_value
+            net_direction = 'neutral'
+            if net_value > 0:
+                net_direction = 'net_buy'
+            elif net_value < 0:
+                net_direction = 'net_sell'
+            
+            # 内部人情绪
+            if buy_count == 0 and sell_count == 0:
+                sentiment = 'neutral'
+            elif buy_count > sell_count * 1.5:
+                sentiment = 'bullish'
+            elif sell_count > buy_count * 1.5:
+                sentiment = 'bearish'
+            else:
+                sentiment = 'neutral'
+            
+            print(f"✅ 获取到 {len(insider_trades)} 条内部人交易记录 (买:{buy_count}, 卖:{sell_count})")
+            
+            return {
+                'recent_trades': insider_trades[:20],  # 最多返回 20 条
+                'summary': {
+                    'total_trades': len(insider_trades),
+                    'buy_count': buy_count,
+                    'sell_count': sell_count,
+                    'total_buy_value': total_buy_value,
+                    'total_sell_value': total_sell_value,
+                    'net_value': net_value,
+                    'net_direction': net_direction,
+                    'insider_sentiment': sentiment
+                }
+            }
+        except Exception as e:
+            print(f"⚠️ 获取内部人交易失败：{e}")
+            return {}
+    
+    def get_institutional_ownership(self) -> dict:
+        """获取机构持仓数据（SEC Form 13F）"""
+        if not EDGAR_AVAILABLE:
+            print("⚠️ edgartools 未安装，跳过机构持仓数据")
+            return {}
+        
+        try:
+            print(f"📊 获取 {self.ticker} 机构持仓数据...")
+            
+            # 获取最新的 13F 文件
+            from edgar import get_filings
+            filings = get_filings(form="13F-HR")
+            if not filings or len(filings) == 0:
+                print("⚠️ 未找到 13F 记录")
+                return {}
+            
+            # 解析最新几份 13F 报告，查找持有该股票的机构
+            # 使用 yfinance 获取机构持仓数据（数据来源：SEC 13F）
+            try:
+                institutional_holders = self.stock.institutional_holders
+                if institutional_holders is not None and len(institutional_holders) > 0:
+                    # 转换为字典列表
+                    holders_list = []
+                    total_shares = 0
+                    total_value = 0
+                    
+                    for _, row in institutional_holders.iterrows():
+                        holder = {
+                            'holder': str(row.get('Holder', '')),
+                            'shares': int(row.get('Shares', 0)) if pd.notna(row.get('Shares')) else 0,
+                            'date_reported': str(row.get('Date Reported', '')),
+                            'percent_out': float(row.get('% Out', 0)) if pd.notna(row.get('% Out')) else 0,
+                            'value': int(row.get('Value', 0)) if pd.notna(row.get('Value')) else 0
+                        }
+                        holders_list.append(holder)
+                        total_shares += holder['shares']
+                        total_value += holder['value']
+                    
+                    # 计算机构持仓比例
+                    try:
+                        shares_outstanding = self.stock.info.get('sharesOutstanding', 0)
+                    except:
+                        shares_outstanding = 0
+                    ownership_percentage = (total_shares / shares_outstanding * 100) if shares_outstanding > 0 else 0
+                    
+                    print(f"✅ 获取到 {len(holders_list)} 家机构持仓数据")
+                    
+                    return {
+                        'top_holders': holders_list[:20],  # 前 20 大机构
+                        'summary': {
+                            'total_institutions': len(holders_list),
+                            'total_shares_held': total_shares,
+                            'total_value': total_value,
+                            'ownership_percentage': round(ownership_percentage, 2),
+                            'concentration_top10': sum(h['shares'] for h in holders_list[:10]) / total_shares * 100 if total_shares > 0 else 0
+                        }
+                    }
+                else:
+                    print("⚠️ 无机构持仓数据")
+                    return {}
+            except Exception as e:
+                print(f"⚠️ 获取机构持仓失败：{e}")
+                return {}
+                
+        except Exception as e:
+            print(f"⚠️ 获取机构持仓失败：{e}")
+            return {}
+    
     def get_sec_filings(self) -> dict:
         """获取 SEC 文件列表"""
         try:
@@ -328,7 +525,9 @@ class StockDataFetcher:
             'balance_sheet': self.get_balance_sheet(),
             'cashflow': self.get_cashflow(),
             'analyst_estimates': self.get_analyst_estimates(),
-            'sec_filings': self.get_sec_filings()
+            'sec_filings': self.get_sec_filings(),
+            'insider_trades': self.get_insider_trades(),
+            'institutional_ownership': self.get_institutional_ownership()
         }
         
         # 保存到缓存

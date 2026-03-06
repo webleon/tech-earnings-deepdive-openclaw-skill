@@ -45,8 +45,122 @@ class ReportExporter:
         print(f"✅ HTML 报告已导出：{filepath}")
         return str(filepath)
     
+    def _calculate_composite_score(self) -> dict:
+        """计算综合评分和 MSCI Barra（如果 data 中没有）"""
+        if self.summary.get('overall_score'):
+            return self.summary
+        
+        try:
+            # 16 模块评分
+            modules = self.modules
+            module_scores = [
+                m.get('score', 0) for m in modules.values()
+                if isinstance(m, dict) and 'score' in m
+            ]
+            avg_module_score = sum(module_scores) / len(module_scores) if module_scores else 0
+            
+            # 6 大视角评分
+            perspectives = self.perspectives
+            perspective_keys = [
+                'quality_compounder', 'imaginative_growth', 'fundamental_long_short',
+                'deep_value', 'catalyst_driven', 'macro_tactical'
+            ]
+            perspective_scores = [
+                perspectives.get(k, {}).get('total_score', 0)
+                for k in perspective_keys
+                if k in perspectives
+            ]
+            avg_perspective_score = sum(perspective_scores) / len(perspective_scores) if perspective_scores else 0
+            
+            # 估值评分
+            valuation = self.valuation
+            upside = valuation.get('summary', {}).get('upside_downside', 0)
+            valuation_score = min(100, max(0, 75 + upside * 1.25))
+            
+            # 综合评分
+            base_score = (
+                avg_module_score * 0.50 +
+                avg_perspective_score * 0.20 +
+                valuation_score * 0.30
+            )
+            
+            # 红旗罚分
+            biases = self.result.get('biases', {})
+            red_flags = biases.get('financial_red_flags', {}).get('items', [])
+            red_flag_penalty = sum(
+                15 if f.get('risk') == '高' else
+                8 if f.get('risk') == '中' else
+                3 if f.get('risk') == '低' else 0
+                for f in red_flags
+            )
+            
+            overall_score = max(0, base_score - red_flag_penalty)
+            
+            # 投资建议
+            if overall_score >= 80:
+                recommendation = '强烈买入'
+            elif overall_score >= 70:
+                recommendation = '买入'
+            elif overall_score >= 60:
+                recommendation = '持有'
+            elif overall_score >= 50:
+                recommendation = '减持'
+            else:
+                recommendation = '卖出'
+            
+            # MSCI Barra 计算
+            quality_modules = ['A_revenue_quality', 'B_profitability', 'C_cash_flow',
+                             'E_competitive_landscape', 'H_partners', 'I_management', 'O_accounting']
+            quality_score = sum(
+                modules.get(m, {}).get('score', 0) for m in quality_modules if modules.get(m)
+            ) / 7
+            
+            growth_modules = ['F_core_kpis', 'G_products', 'N_rd_efficiency']
+            growth_score = sum(
+                modules.get(m, {}).get('score', 0) for m in growth_modules if modules.get(m)
+            ) / 3
+            
+            value_score = modules.get('K_valuation', {}).get('score', 0)
+            sentiment_modules = ['D_forward_guidance', 'L_ownership']
+            sentiment_score = sum(
+                modules.get(m, {}).get('score', 0) for m in sentiment_modules if modules.get(m)
+            ) / 2
+            macro_score = modules.get('J_macro', {}).get('score', 0)
+            esg_score = modules.get('P_esg', {}).get('score', 0)
+            
+            barra_score = (
+                quality_score * 0.30 +
+                growth_score * 0.25 +
+                value_score * 0.20 +
+                sentiment_score * 0.10 +
+                macro_score * 0.10 +
+                esg_score * 0.05
+            )
+            
+            # 更新 self.summary
+            self.summary['overall_score'] = round(overall_score, 1)
+            self.summary['recommendation'] = recommendation
+            self.summary['barra_score'] = round(barra_score, 1)
+            self.summary['valuation_upside'] = round(upside, 1)
+            self.summary['barra_factors'] = {
+                'quality': round(quality_score, 1),
+                'growth': round(growth_score, 1),
+                'value': round(value_score, 1),
+                'sentiment': round(sentiment_score, 1),
+                'macro': round(macro_score, 1),
+                'esg': round(esg_score, 1)
+            }
+            
+            return self.summary
+        except Exception as e:
+            print(f"⚠️ 计算综合评分失败：{e}")
+            return self.summary
+    
     def _generate_detailed_html(self) -> str:
         """生成详细的 HTML 报告 - 专业投资报告风格（最终优化版）"""
+        # 先计算综合评分（如果还没有）
+        self._calculate_composite_score()
+        
         html = []
         
         # ========== 统一的 HTML 头部和 CSS 样式 ==========
@@ -1123,7 +1237,7 @@ class ReportExporter:
         
         all_red_flags = [
             ('GAAP vs Non-GAAP', '检查 GAAP 与 Non-GAAP 利润差异，SBC 占比是否过高', f'差异={gaap_gap:.1f}%，SBC/收入={sbc_ratio:.1f}%', '差异<50% 且 SBC/收入<15% 为正常'),
-            ('收入确认异常⁴', '检查收入确认政策是否激进，递延收入趋势是否异常', '递延收入/收入=需要 10-K 数据', '递延收入/收入<10% 为正常'),
+            ('收入确认异常⁷', '检查收入确认政策是否激进，递延收入趋势是否异常', '递延收入/收入=需要 10-K 数据', '递延收入/收入<10% 为正常'),
             ('应收账款异常⁴', '检查应收账款增速是否超过收入增速', f'应收/收入={receivables_ratio:.1f}%', '应收/收入<30% 为正常'),
             ('内部人交易³', '检查高管是否大量抛售股票', f'净卖出/总股本={financials.get("insider_selling_ratio", 0):.4f}%', '净卖出/总股本<1% 为正常'),
             ('资本支出暴增', '检查资本支出占收入比例是否异常高', f'CapEx/收入={capex_ratio:.1f}%', 'CapEx/收入<20% 为正常'),
@@ -1313,6 +1427,7 @@ class ReportExporter:
         html.append('                    <tr><td>应收账款占比<sup>⁴</sup></td><td>90-95%</td><td>未考虑行业差异，SaaS 公司正常水平 20-40%</td></tr>')
         html.append('                    <tr><td>现金流检查<sup>⁵</sup></td><td>90-95%</td><td>未剔除一次性因素（大型合同预收款、诉讼和解金等）</td></tr>')
         html.append('                    <tr><td>AI 收入检查<sup>⁶</sup></td><td>70-80%</td><td>基于关键词匹配，假阳性/假阴性约 10-25%，仅供参考</td></tr>')
+        html.append('                    <tr><td>收入确认<sup>⁷</sup></td><td>需 10-K 数据</td><td>递延收入数据需要从 10-K 文件中提取，当前无法获取</td></tr>')
         html.append('                </tbody>')
         html.append('            </table>')
         html.append('            <p class="accuracy-footer">详细准确性说明：<a href="https://github.com/webleon/tech-earnings-deepdive-openclaw-skill/blob/main/docs/DATA_ACCURACY.md" target="_blank">docs/DATA_ACCURACY.md</a></p>')

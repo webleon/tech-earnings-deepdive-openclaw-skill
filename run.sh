@@ -98,7 +98,7 @@ generate_report() {
     
     log "📝 生成最终报告..."
     
-    $PYTHON_CMD "${SCRIPT_DIR}/generate_single_report.py" "$stock"
+    $PYTHON_CMD "${SCRIPT_DIR}/analyze.py" "$stock"
 }
 
 # 主函数

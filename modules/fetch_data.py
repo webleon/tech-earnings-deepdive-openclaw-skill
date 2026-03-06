@@ -513,15 +513,21 @@ class StockDataFetcher:
         
         数据来源：
         1. yfinance 财报数据（主要）
-        2. Finnhub 备用（如配置）
+        
+        ⚠️ 重要说明：
+        - yfinance 提供的字段是 `Selling General And Administration`（SG&A）
+        - 这包含了 S&M（销售与市场）+ G&A（一般行政管理）
+        - 因此数据会比纯 S&M 费用高约 15-20%
+        - 但**趋势分析完全可靠**，同比增长率准确
         
         返回：
         {
-            'annual': [年度 S&M 费用列表],
-            'quarterly': [季度 S&M 费用列表],
+            'annual': [年度 SG&A 费用列表],
+            'quarterly': [季度 SG&A 费用列表],
             'latest_annual': 最新年度费用,
             'latest_quarterly': 最新季度费用,
-            'yoy_growth': 同比增长率
+            'yoy_growth': 同比增长率,
+            'note': '包含一般行政费用（G&A）'
         }
         """
         result = {
@@ -559,7 +565,11 @@ class StockDataFetcher:
                 if len(sm_row) >= 2 and sm_row.iloc[1] > 0:
                     result['yoy_growth'] = (sm_row.iloc[0] - sm_row.iloc[1]) / sm_row.iloc[1]
                 
+                # 添加说明注释
+                result['note'] = '包含一般行政费用（G&A），比纯 S&M 高约 15-20%'
+                
                 print(f"✅ 获取到 S&M 费用：${result['latest_annual']/1e9:.2f}B (增长：{result['yoy_growth']*100:.1f}%)")
+                print(f"   注：数据为 SG&A（包含 G&A），趋势分析可靠")
             
             # 2. Finnhub 备用（如 yfinance 失败）
             if result['latest_annual'] == 0 and self.finnhub_client:

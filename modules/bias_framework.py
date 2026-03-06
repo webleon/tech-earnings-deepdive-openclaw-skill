@@ -369,7 +369,18 @@ class BiasFramework:
             return None
     
     def _check_receivables(self) -> dict:
-        """检查应收账款"""
+        """
+        检查应收账款占比
+        
+        ⚠️ 数据说明：
+        - 红旗阈值：应收账款/收入 > 30%
+        - 未考虑行业差异（SaaS 公司正常 20-40%，零售业 5-15%）
+        - 未考虑季节性因素
+        - 适合识别异常高的应收账款（>50%）
+        - 跨行业对比时需谨慎
+        
+        参考：docs/DATA_ACCURACY.md#应收账款占比
+        """
         receivables = self.balance_sheet.get('accounts_receivable', 0)
         revenue = self.financials.get('total_revenue', 1)
         
@@ -387,7 +398,18 @@ class BiasFramework:
         return None
     
     def _check_insider_trading(self) -> dict:
-        """检查内部人交易（财务红旗）"""
+        """
+        检查内部人交易（财务红旗）
+        
+        ⚠️ 数据说明：
+        - 数据来源：SEC Form 4（通过 yfinance）
+        - 数据延迟：3-5 天（SEC 提交 + yfinance 抓取）
+        - 未区分交易类型（市场买卖、期权行权、自动扣税等）
+        - 未识别 10b5-1 计划（预先设定的自动交易）
+        - 适合识别长期趋势，不适合短期交易信号
+        
+        参考：docs/DATA_ACCURACY.md#内部人交易
+        """
         try:
             insider_data = self.data.get('insider_trades', {})
             if not insider_data:
@@ -474,7 +496,18 @@ class BiasFramework:
         return None
     
     def _check_cashflow_divergence(self) -> dict:
-        """检查现金流与利润背离"""
+        """
+        检查现金流与利润背离
+        
+        ⚠️ 数据说明：
+        - 数据来源：yfinance 现金流量表
+        - 未剔除一次性因素（大型合同预收款、诉讼和解金等）
+        - 未考虑资本化政策差异
+        - 适合识别长期背离趋势
+        - 单季度数据可能误导
+        
+        参考：docs/DATA_ACCURACY.md#现金流与利润背离检查
+        """
         net_income = self.financials.get('net_income', 0)
         operating_cf = self.cashflow.get('operating_cashflow', 0)
         
@@ -535,7 +568,17 @@ class BiasFramework:
     
 
     def _check_stock_dilution(self) -> dict:
-        """分析股票期权稀释情况"""
+        """
+        分析股票期权稀释情况
+        
+        ⚠️ 数据说明：
+        - 基于已发行股本计算，不包含未行权期权
+        - 实际稀释率可能比计算值高 20-50%
+        - SBC（基于股票的薪酬）数据部分公司缺失
+        - 趋势分析可靠，可识别明显高稀释公司
+        
+        参考：docs/DATA_ACCURACY.md#股票期权稀释
+        """
         try:
             financials = self.data.get('financials', {})
             
@@ -578,7 +621,19 @@ class BiasFramework:
             return None
 
     def _check_ai_revenue(self) -> dict:
-        """检查 AI 收入真实性（基于公司描述）"""
+        """
+        检查 AI 收入真实性（基于公司描述）
+        
+        ⚠️ 数据说明：
+        - 检查方法：关键词匹配（'ai', 'artificial intelligence'）
+        - 准确率：70-80%
+        - 假阳性（误报）：约 10-15%（AI 可能是其他缩写）
+        - 假阴性（漏报）：约 20-25%（使用 ML、DL 等其他术语）
+        - 无法核实 AI 收入占比
+        - 仅作为初步筛选，不应作为决策依据
+        
+        参考：docs/DATA_ACCURACY.md#ai 收入真实性检查
+        """
         # 从公司描述中检查是否涉及 AI
         description = self.data.get('company_info', {}).get('description', '')
         if not description:
@@ -590,6 +645,7 @@ class BiasFramework:
             return {
                 'name': 'AI 收入真实性',
                 'description': '公司涉及 AI 业务，需核实 AI 收入定义和可持续性',
+                'note': '基于关键词匹配，准确率 70-80%，仅供参考',
                 'checklist': [
                     'AI 收入的具体定义是什么？',
                     '是经常性收入还是一次性？',

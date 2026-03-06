@@ -78,7 +78,7 @@ class BatchAnalyzer:
         return self.results
     
     def generate_comparison_report(self):
-        """生成多股对比报告"""
+        """生成多股对比报告（增强版）"""
         if not self.results:
             return
         
@@ -86,7 +86,7 @@ class BatchAnalyzer:
         filename = f"comparison_{timestamp}.html"
         filepath = self.output_dir / filename
         
-        # 简单的对比表格
+        # 增强版对比报告
         html = ['<!DOCTYPE html>', '<html><head><meta charset="UTF-8">',
                 '<title>批量分析对比报告</title>',
                 '<style>',
@@ -98,13 +98,20 @@ class BatchAnalyzer:
                 '.score-high { color: #27ae60; font-weight: bold; }',
                 '.score-medium { color: #f39c12; font-weight: bold; }',
                 '.score-low { color: #c0392b; font-weight: bold; }',
+                'h2 { color: #333; border-left: 4px solid #333; padding-left: 15px; margin-top: 40px; }',
+                '.section { margin: 30px 0; }',
                 '</style>',
                 '</head><body>',
                 '<h1>📊 批量分析对比报告</h1>',
                 f'<p>生成时间：{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>',
-                '<table>',
-                '<tr><th>股票代码</th><th>综合评分</th><th>MSCI Barra</th>',
-                '<th>投资建议</th><th>置信度</th></tr>']
+                f'<p>分析股票：{", ".join(self.results.keys())}</p>']
+        
+        # 第一部分：综合评分对比
+        html.extend(['<div class="section">',
+                    '<h2>1️⃣ 综合评分对比</h2>',
+                    '<table>',
+                    '<tr><th>股票代码</th><th>综合评分</th><th>MSCI Barra</th>',
+                    '<th>投资建议</th><th>置信度</th></tr>'])
         
         for ticker, result in sorted(self.results.items()):
             summary = result['summary']
@@ -116,14 +123,157 @@ class BatchAnalyzer:
             score_class = 'score-high' if score >= 70 else 'score-medium' if score >= 50 else 'score-low'
             
             html.append(f'<tr>'
-                       f'<td>{ticker}</td>'
+                       f'<td><strong>{ticker}</strong></td>'
                        f'<td class="{score_class}">{score:.1f}/100</td>'
                        f'<td>{barra:.1f}</td>'
                        f'<td>{rec}</td>'
                        f'<td>{conf}</td>'
                        f'</tr>')
         
-        html.extend(['</table>', '</body></html>'])
+        html.extend(['</table>', '</div>'])
+        
+        # 第二部分：基础估值指标
+        html.extend(['<div class="section">',
+                    '<h2>2️⃣ 基础估值指标</h2>',
+                    '<table>',
+                    '<tr><th>股票</th><th>股价</th><th>市值 (亿)</th>',
+                    '<th>PE</th><th>Forward PE</th><th>PB</th></tr>'])
+        
+        for ticker, result in sorted(self.results.items()):
+            price_data = result['data'].get('price', {})
+            price = price_data.get('current_price', 0)
+            market_cap = price_data.get('market_cap', 0) / 1e8  # 转换为亿
+            pe = price_data.get('pe_ratio', 0)
+            forward_pe = price_data.get('forward_pe', 0)
+            pb = price_data.get('price_to_book', 0)
+            
+            html.append(f'<tr>'
+                       f'<td><strong>{ticker}</strong></td>'
+                       f'<td>${price:.2f}</td>'
+                       f'<td>${market_cap:.1f}B</td>'
+                       f'<td>{pe:.1f}</td>'
+                       f'<td>{forward_pe:.1f}</td>'
+                       f'<td>{pb:.1f}</td>'
+                       f'</tr>')
+        
+        html.extend(['</table>', '</div>'])
+        
+        # 第三部分：6 种估值方法对比
+        html.extend(['<div class="section">',
+                    '<h2>3️⃣ 6 种估值方法对比（上涨空间 %）</h2>',
+                    '<table>',
+                    '<tr><th>股票</th>',
+                    '<th>Owner Earnings</th>',
+                    '<th>PEG</th>',
+                    '<th>Reverse DCF</th>',
+                    '<th>Magic Formula</th>',
+                    '<th>EV/EBITDA</th>',
+                    '<th>EV/Revenue+Rule40</th></tr>'])
+        
+        method_map = {
+            'owner_earnings': 'owner_earnings',
+            'peg': 'peg',
+            'reverse_dcf': 'reverse_dcf',
+            'magic_formula': 'magic_formula',
+            'ev_ebitda': 'ev_ebitda',
+            'ev_revenue_rule40': 'ev_revenue_rule40'
+        }
+        
+        for ticker, result in sorted(self.results.items()):
+            valuation = result['valuation']
+            
+            html.append(f'<tr><td><strong>{ticker}</strong></td>')
+            for method_key in method_map.values():
+                method_data = valuation.get(method_key, {})
+                upside = method_data.get('upside_downside', 0)
+                color_class = 'score-high' if upside > 20 else 'score-medium' if upside > -20 else 'score-low'
+                html.append(f'<td class="{color_class}">{upside:+.1f}%</td>')
+            html.append('</tr>')
+        
+        html.extend(['</table>', '</div>'])
+        
+        # 第四部分：综合估值结果
+        html.extend(['<div class="section">',
+                    '<h2>4️⃣ 综合估值结果</h2>',
+                    '<table>',
+                    '<tr><th>股票</th><th>平均合理价值</th><th>当前股价</th>',
+                    '<th>上涨/下跌空间</th><th>投资建议</th><th>置信度</th></tr>'])
+        
+        for ticker, result in sorted(self.results.items()):
+            valuation_summary = result['valuation'].get('summary', {})
+            fair_value = valuation_summary.get('average_fair_value', 0)
+            current_price = valuation_summary.get('current_price', 0)
+            upside = valuation_summary.get('upside_downside', 0)
+            rec = valuation_summary.get('recommendation', 'N/A')
+            conf = valuation_summary.get('confidence', 'N/A')
+            
+            upside_class = 'score-high' if upside > 20 else 'score-medium' if upside > -20 else 'score-low'
+            
+            html.append(f'<tr>'
+                       f'<td><strong>{ticker}</strong></td>'
+                       f'<td>${fair_value:.2f}</td>'
+                       f'<td>${current_price:.2f}</td>'
+                       f'<td class="{upside_class}">{upside:+.1f}%</td>'
+                       f'<td>{rec}</td>'
+                       f'<td>{conf}</td>'
+                       f'</tr>')
+        
+        html.extend(['</table>', '</div>'])
+        
+        # 第五部分：6 大投资视角
+        html.extend(['<div class="section">',
+                    '<h2>5️⃣ 6 大投资视角评分</h2>',
+                    '<table>',
+                    '<tr><th>股票</th>',
+                    '<th>质量复利</th>',
+                    '<th>想象力成长</th>',
+                    '<th>基本面多空</th>',
+                    '<th>深度价值</th>',
+                    '<th>催化剂驱动</th>',
+                    '<th>宏观战术</th></tr>'])
+        
+        perspective_names = {
+            'quality_compounder': '质量复利',
+            'imaginative_growth': '想象力成长',
+            'fundamental_long_short': '基本面多空',
+            'deep_value': '深度价值',
+            'catalyst_driven': '催化剂驱动',
+            'macro_tactical': '宏观战术'
+        }
+        
+        for ticker, result in sorted(self.results.items()):
+            perspectives = result['perspectives']
+            
+            html.append(f'<tr><td><strong>{ticker}</strong></td>')
+            for key in perspective_names.keys():
+                perspective = perspectives.get(key, {})
+                score = perspective.get('total_score', 0)
+                color_class = 'score-high' if score >= 70 else 'score-medium' if score >= 50 else 'score-low'
+                html.append(f'<td class="{color_class}">{score:.1f}</td>')
+            html.append('</tr>')
+        
+        html.extend(['</table>', '</div>'])
+        
+        # 第六部分：Key Forces
+        html.extend(['<div class="section">',
+                    '<h2>6️⃣ 关键驱动力（Key Forces）</h2>',
+                    '<table>',
+                    '<tr><th>股票</th><th>关键驱动力</th></tr>'])
+        
+        for ticker, result in sorted(self.results.items()):
+            key_forces = result['key_forces']
+            forces_text = '<br>'.join([
+                f"• {kf.get('name', 'N/A')} (影响力：{kf.get('impact_score', 0)}/10)"
+                for kf in key_forces[:3]  # 只显示前 3 个
+            ])
+            html.append(f'<tr>'
+                       f'<td><strong>{ticker}</strong></td>'
+                       f'<td>{forces_text}</td>'
+                       f'</tr>')
+        
+        html.extend(['</table>', '</div>'])
+        
+        html.extend(['</body></html>'])
         
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write('\n'.join(html))

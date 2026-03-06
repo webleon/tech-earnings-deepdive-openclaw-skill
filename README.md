@@ -52,6 +52,7 @@
 | **MSCI Barra 多因子** | 质量、成长、价值、情绪、宏观、ESG | ✅ 100% |
 | **反偏见框架** | 认知陷阱、财务红旗检查 | ✅ 100% |
 | **HTML 报告导出** | 专业格式投资备忘录 | ✅ 100% |
+| **批量对比报告** | 多股对比分析（6 个维度） | ✅ 100% |
 
 ### 适用场景
 
@@ -60,6 +61,7 @@
 | 财报分析 | "帮我看看 NVDA 最新财报" |
 | 持仓决策 | "该不该继续持有 MSFT？" |
 | 估值判断 | "GOOGL 现在贵不贵？" |
+| 多股对比 | "对比 NVDA 和 AMD 哪个更值得投资" |
 
 ---
 
@@ -92,33 +94,72 @@ pip3 install yfinance pandas numpy requests edgartools
 
 ```bash
 # 分析单只股票
-./run.sh AAPL
+python3 analyze.py AAPL
 
-# 批量分析
-./run.sh MSFT GOOGL META
+# 批量分析（2 只或以上）
+python3 analyze_batch.py NVDA AMD
+
+# 使用 run.sh 快捷方式（单股）
+./run.sh AAPL
 ```
 
 ### 输出位置
 
-| 类型 | 位置 |
-|------|------|
-| HTML 报告 | `~/.openclaw/tech-earnings-output/` |
-| 日志文件 | `log/` |
-| 数据缓存 | `cache/` |
+| 类型 | 位置 | 说明 |
+|------|------|------|
+| **个股报告** | `~/.openclaw/tech-earnings-output/` | 详细 HTML 报告 |
+| **对比报告** | `~/.openclaw/tech-earnings-output/batch/` | 多股对比 HTML |
+| **日志文件** | `log/` | 运行日志 |
+| **数据缓存** | `cache/` | 24 小时缓存 |
 
 ### 示例输出
 
-```
+#### 单股分析
+
+```bash
+$ python3 analyze.py AAPL
+
 🚀 开始分析 AAPL...
 📊 获取数据...
 🔍 执行 16 模块分析...
 👁️ 执行 6 大投资哲学视角分析...
 💰 执行 6 种估值方法计算...
-📊 计算综合评分...
-   综合评分：38.8/100
-   投资建议：卖出
-✅ 报告生成完成
+📊 综合评分：35.1/100
+💰 MSCI Barra: 63.3/100
+📈 投资建议：卖出
+🎯 置信度：低
+✅ 报告已生成：~/.openclaw/tech-earnings-output/AAPL_analysis_20260306_124835.html
 ```
+
+#### 批量对比
+
+```bash
+$ python3 analyze_batch.py NVDA AMD
+
+🚀 批量分析 2 只股票
+✅ [1/2] NVDA: 67.1/100 - 持有
+✅ [2/2] AMD: 49.9/100 - 卖出
+✅ 批量分析完成：2/2 只股票
+📊 对比报告已生成：~/.openclaw/tech-earnings-output/batch/comparison_20260306_140047.html
+```
+
+### 对比报告内容
+
+增强版对比报告包含 6 个部分：
+
+1. **综合评分对比** - 综合评分、MSCI Barra、投资建议、置信度
+2. **基础估值指标** - 股价、市值、PE、Forward PE、PB
+3. **6 种估值方法对比** - Owner Earnings、PEG、Reverse DCF 等上涨空间
+4. **综合估值结果** - 平均合理价值、上涨/下跌空间
+5. **6 大投资视角评分** - 质量复利、想象力成长等 6 个维度
+6. **关键驱动力** - 每只股票的 3 个 Key Forces
+
+**示例对比：**
+
+| 股票 | 综合评分 | MSCI Barra | PE | 上涨空间 | 建议 |
+|------|---------|-----------|-----|---------|------|
+| **NVDA** | 67.1/100 🟡 | 74.0 | 37.4 | +44.8% 🟢 | 强烈买入 |
+| **AMD** | 49.9/100 🔴 | 63.4 | 76.4 | -53.4% 🔴 | 卖出 |
 
 ---
 
@@ -128,20 +169,24 @@ pip3 install yfinance pandas numpy requests edgartools
 
 ```
 tech-earnings-deepdive-openclaw-skill/
-├── run.sh                      # 主入口
-├── generate_single_report.py   # 单股报告生成
-├── modules/
-│   ├── fetch_data.py          # 数据获取
-│   ├── analyze_full.py        # 16 模块分析
-│   ├── perspectives_full.py   # 6 大视角分析
-│   ├── valuation_full.py      # 6 种估值方法
-│   ├── key_forces.py          # Key Forces 识别
-│   ├── bias_framework.py      # 反偏见框架
-│   ├── variant_view.py        # Variant View 生成
-│   ├── batch_analysis.py      # 批量分析
-│   └── export_report.py       # HTML 报告导出
-├── cache/                      # 数据缓存
-└── log/                        # 运行日志
+├── run.sh                    # Shell 快捷入口
+├── analyze.py                # 单股分析入口（36 行）
+├── analyze_batch.py          # 批量分析入口（146 行）
+│
+└── modules/                  # 核心模块
+    ├── core.py              # ⭐ 核心引擎（241 行）
+    │   ├── calculate_summary()
+    │   ├── analyze_single_stock()
+    │   └── export_report()
+    │
+    ├── fetch_data.py        # 数据获取
+    ├── analyze_full.py      # 16 模块分析
+    ├── perspectives_full.py # 6 大视角
+    ├── valuation_full.py    # 6 种估值
+    ├── key_forces.py        # Key Forces
+    ├── bias_framework.py    # 反偏见
+    ├── variant_view.py      # Variant View
+    └── export_report.py     # HTML 导出
 ```
 
 ## 数据获取
@@ -360,7 +405,7 @@ valuation_score = min(100, max(0, 75 + upside × 1.25))
 **A:** 可能原因：
 1. 缓存数据过期 - 删除 `cache/` 重新获取
 2. 红旗罚分影响 - 检查财务红旗
-3. 估值公式理解 - 详见 [估值评分转换](#6 种估值方法)
+3. 估值公式理解 - 详见 [估值评分转换](#6-种估值方法)
 
 ### Q: 支持哪些市场？
 
@@ -375,6 +420,16 @@ valuation_score = min(100, max(0, 75 + upside × 1.25))
 - 数据来源：Yahoo Finance + SEC EDGAR
 - 缓存机制：股价 1 小时，财报 24 小时
 - 异常处理：NaN 检查、缓存异常捕获
+
+### Q: 批量对比报告包含什么？
+
+**A:** 
+1. 综合评分对比
+2. 基础估值指标（PE、市值等）
+3. 6 种估值方法上涨空间
+4. 综合估值结果
+5. 6 大投资视角评分
+6. 关键驱动力（Key Forces）
 
 ---
 
@@ -399,5 +454,6 @@ Copyright (c) 2026 Day1Global / Star & Ruby
 
 *最后更新：2026-03-06*  
 *版本：v3.0*  
-*字数：约 8,000 字*  
-*页数：约 20 页*
+*维护者：WebLeOn*  
+*字数：约 5,000 字*  
+*页数：约 12 页*

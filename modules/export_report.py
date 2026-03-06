@@ -51,6 +51,8 @@ class ReportExporter:
             return self.summary
         
         try:
+            import statistics
+            
             # 16 模块评分
             modules = self.modules
             module_scores = [
@@ -137,11 +139,34 @@ class ReportExporter:
                 esg_score * 0.05
             )
             
+            # 置信度计算
+            if len(perspective_scores) >= 2:
+                perspective_std = statistics.stdev(perspective_scores)
+                perspective_conf = 100 if perspective_std < 10 else 70 if perspective_std < 20 else 40
+            else:
+                perspective_conf = 50
+            
+            upside_values = [
+                m.get('upside_downside', 0)
+                for m in valuation.get('methods', {}).values()
+                if isinstance(m, dict) and 'upside_downside' in m
+            ]
+            
+            if len(upside_values) >= 2:
+                upside_std = statistics.stdev(upside_values)
+                upside_conf = 100 if upside_std < 15 else 70 if upside_std < 30 else 40
+            else:
+                upside_conf = 50
+            
+            confidence_score = (perspective_conf + upside_conf) / 2
+            confidence = '高' if confidence_score >= 80 else '中' if confidence_score >= 60 else '低'
+            
             # 更新 self.summary
             self.summary['overall_score'] = round(overall_score, 1)
             self.summary['recommendation'] = recommendation
             self.summary['barra_score'] = round(barra_score, 1)
             self.summary['valuation_upside'] = round(upside, 1)
+            self.summary['confidence'] = confidence
             self.summary['barra_factors'] = {
                 'quality': round(quality_score, 1),
                 'growth': round(growth_score, 1),
@@ -1235,13 +1260,14 @@ class ReportExporter:
         debt_ratio = balance_sheet.get('debt_to_equity', 0)
         current_ratio = balance_sheet.get('current_ratio', 0)
         
+        # 按照角标顺序排列（1-7），无角标的放在最后
         all_red_flags = [
-            ('GAAP vs Non-GAAP', '检查 GAAP 与 Non-GAAP 利润差异，SBC 占比是否过高', f'差异={gaap_gap:.1f}%，SBC/收入={sbc_ratio:.1f}%', '差异<50% 且 SBC/收入<15% 为正常'),
-            ('收入确认异常⁷', '检查收入确认政策是否激进，递延收入趋势是否异常', '递延收入/收入=需要 10-K 数据', '递延收入/收入<10% 为正常'),
-            ('应收账款异常⁴', '检查应收账款增速是否超过收入增速', f'应收/收入={receivables_ratio:.1f}%', '应收/收入<30% 为正常'),
             ('内部人交易³', '检查高管是否大量抛售股票', f'净卖出/总股本={financials.get("insider_selling_ratio", 0):.4f}%', '净卖出/总股本<1% 为正常'),
-            ('资本支出暴增', '检查资本支出占收入比例是否异常高', f'CapEx/收入={capex_ratio:.1f}%', 'CapEx/收入<20% 为正常'),
+            ('应收账款异常⁴', '检查应收账款增速是否超过收入增速', f'应收/收入={receivables_ratio:.1f}%', '应收/收入<30% 为正常'),
             ('现金流背离⁵', '检查利润为正但现金流为负的情况', f'经营现金流/净利润={cash_flow_ratio:.2f}', '经营现金流/净利润>0.8 为正常'),
+            ('收入确认异常⁷', '检查收入确认政策是否激进，递延收入趋势是否异常', '递延收入/收入=需要 10-K 数据', '递延收入/收入<10% 为正常'),
+            ('GAAP vs Non-GAAP', '检查 GAAP 与 Non-GAAP 利润差异，SBC 占比是否过高', f'差异={gaap_gap:.1f}%，SBC/收入={sbc_ratio:.1f}%', '差异<50% 且 SBC/收入<15% 为正常'),
+            ('资本支出暴增', '检查资本支出占收入比例是否异常高', f'CapEx/收入={capex_ratio:.1f}%', 'CapEx/收入<20% 为正常'),
             ('负债结构恶化', '检查负债率和流动比率是否恶化', f'负债率={debt_ratio:.2f}, 流动比率={current_ratio:.2f}', '负债率<1 且流动比率>1.5 为正常')
         ]
         

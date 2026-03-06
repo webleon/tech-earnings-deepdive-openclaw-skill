@@ -388,7 +388,7 @@ class BiasFramework:
         
         if receivables_ratio > 30:
             return {
-                'name': '应收账款占比过高',
+                'name': '应收账款占比过高⁴',
                 'description': f'应收账款占收入{receivables_ratio:.1f}%',
                 'risk': '中',
                 'data': {
@@ -427,7 +427,7 @@ class BiasFramework:
                 severity = '高' if sell_count > buy_count * 4 else '中'
                 ratio = sell_count / buy_count if buy_count > 0 else float('inf')
                 return {
-                    'name': '内部人交易 - 大规模减持',
+                    'name': '内部人交易 - 大规模减持³',
                     'description': f'最近内部人交易：买入{buy_count}次 vs 卖出{sell_count}次，净卖出${abs(net_value)/1e6:.1f}M',
                     'risk': severity,
                     'data': {
@@ -513,7 +513,7 @@ class BiasFramework:
         
         if net_income > 0 and operating_cf < 0:
             return {
-                'name': '现金流与利润背离',
+                'name': '现金流与利润背离⁵',
                 'description': f'净利润${net_income/1e9:.1f}亿，经营现金流${operating_cf/1e9:.1f}亿',
                 'risk': '高',
                 'data': {
@@ -603,7 +603,7 @@ class BiasFramework:
             # 只有在检测到风险时才返回
             if severity:
                 return {
-                    'name': '股票期权稀释',
+                    'name': '股票期权稀释²',
                     'description': f'年股权稀释率{dilution_rate:.1f}%，SBC 占收入{sbc_to_revenue_ratio:.1f}%，SBC 占净利润{sbc_to_net_income_ratio:.1f}%',
                     'risk': severity,
                     'data': {
@@ -643,7 +643,7 @@ class BiasFramework:
         
         if 'ai' in description_lower or 'artificial intelligence' in description_lower:
             return {
-                'name': 'AI 收入真实性',
+                'name': 'AI 收入真实性⁶',
                 'description': '公司涉及 AI 业务，需核实 AI 收入定义和可持续性',
                 'note': '基于关键词匹配，准确率 70-80%，仅供参考',
                 'checklist': [

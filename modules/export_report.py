@@ -219,6 +219,71 @@ class ReportExporter:
             margin-bottom: 25px;
         }
         
+        /* 数据准确性说明表格 */
+        .accuracy-note {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .accuracy-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin: 15px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .accuracy-table thead {
+            background: #34495e;
+            color: white;
+        }
+        
+        .accuracy-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .accuracy-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            line-height: 1.5;
+        }
+        
+        .accuracy-table tbody tr:nth-child(even) {
+            background: #ffffff;
+        }
+        
+        .accuracy-table tbody tr:hover {
+            background: #f5f6fa;
+        }
+        
+        .accuracy-table sup {
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .accuracy-footer {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+        
+        .accuracy-footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .accuracy-footer a:hover {
+            text-decoration: underline;
+        }
+        
         /* 16 模块 Grid 布局 - 桌面端 4 列 */
         .modules-grid {
             display: grid;
@@ -1232,6 +1297,27 @@ class ReportExporter:
         html.append('                </div>')
         html.append('            </div>')
         html.append('        </div>')
+        
+        # 添加数据准确性说明
+        html.append('        <div class="appendix-section">')
+        html.append('            <h4>📊 数据准确性说明</h4>')
+        html.append('            <p class="accuracy-note">本报告使用角标标注数据的准确性和局限性，详细说明如下：</p>')
+        html.append('            <table class="accuracy-table">')
+        html.append('                <thead>')
+        html.append('                    <tr><th>指标</th><th>准确率</th><th>说明</th></tr>')
+        html.append('                </thead>')
+        html.append('                <tbody>')
+        html.append('                    <tr><td>S&M 费用<sup>¹</sup></td><td>85-90%</td><td>包含一般行政费用（G&A），比纯 S&M 高约 15-20%，但趋势分析可靠</td></tr>')
+        html.append('                    <tr><td>股票期权稀释<sup>²</sup></td><td>90-95%</td><td>基于已发行股本，未包含未行权期权，实际稀释可能高估 20-50%</td></tr>')
+        html.append('                    <tr><td>内部人交易<sup>³</sup></td><td>80-85%</td><td>数据延迟 3-5 天，未区分交易类型（市场买卖/期权行权/自动扣税）</td></tr>')
+        html.append('                    <tr><td>应收账款占比<sup>⁴</sup></td><td>90-95%</td><td>未考虑行业差异，SaaS 公司正常水平 20-40%</td></tr>')
+        html.append('                    <tr><td>现金流检查<sup>⁵</sup></td><td>90-95%</td><td>未剔除一次性因素（大型合同预收款、诉讼和解金等）</td></tr>')
+        html.append('                    <tr><td>AI 收入检查<sup>⁶</sup></td><td>70-80%</td><td>基于关键词匹配，假阳性/假阴性约 10-25%，仅供参考</td></tr>')
+        html.append('                </tbody>')
+        html.append('            </table>')
+        html.append('            <p class="accuracy-footer">详细准确性说明：<a href="https://github.com/webleon/tech-earnings-deepdive-openclaw-skill/blob/main/docs/DATA_ACCURACY.md" target="_blank">docs/DATA_ACCURACY.md</a></p>')
+        html.append('        </div>')
+        
         html.append('        <div class="appendix-disclaimer">')
         html.append('            <h4>⚠️ 免责声明</h4>')
         html.append('            <ul>')

@@ -13,19 +13,126 @@ from datetime import datetime
 class ValuationCalculator:
     """估值计算器 - 6 种大师方法完整实现"""
     
-    # Damodaran 2026 年 1 月数据 - 大类平均
-    DAMODARAN_AGGREGATED = {
-        'Technology': 26.5,      # 软件 + 硬件 + 半导体平均
-        'Healthcare': 16.5,      # 制药 + 生物科技 + 医疗器械平均
-        'Consumer Cyclical': 15.8,
-        'Consumer Defensive': 13.5,
-        'Financial Services': 20.0,
-        'Energy': 6.5,
-        'Industrials': 17.5,
-        'Communication Services': 18.0,
-        'Real Estate': 18.0,
-        'Basic Materials': 12.0,
-        'Utilities': 14.0,
+    # Damodaran 2026 年 1 月数据 - 90+ 细分行业（http://pages.stern.nyu.edu/~adamodar）
+    DAMODARAN_INDUSTRY = {
+        # Technology - 科技行业
+        'Semiconductor': 34.75,
+        'Semiconductor Equipment & Materials': 24.74,
+        'Software (System & Application)': 24.48,
+        'Software (Internet)': 30.26,
+        'Software (Entertainment)': 22.01,
+        'Computers/Peripherals': 25.42,
+        'Electronics (General)': 19.99,
+        'Electronics (Consumer & Office)': 30.70,
+        'Computer Services': 14.10,
+        'Information Technology': 20.31,  # 大类平均
+        
+        # Healthcare - 医疗健康
+        'Drugs (Pharmaceutical)': 15.25,
+        'Drugs (Biotechnology)': 15.78,
+        'Healthcare Products': 19.78,
+        'Healthcare Support Services': 11.17,
+        'Healthcare Information and Technology': 21.27,
+        'Hospitals/Healthcare Facilities': 8.86,
+        'Medical/Nursing Services': 11.84,
+        'Healthcare': 16.50,  # 大类平均
+        
+        # Consumer Cyclical - 周期消费
+        'Entertainment': 19.41,
+        'Restaurant/Dining': 17.49,
+        'Hotel/Gaming': 14.93,
+        'Recreation': 10.39,
+        'Retail (General)': 17.38,
+        'Retail (Special Lines)': 11.47,
+        'Retail (Automotive)': 14.79,
+        'Retail (Building Supply)': 14.42,
+        'Retail (Grocery and Food)': 8.94,
+        'Auto & Truck': 47.76,
+        'Auto Parts': 6.43,
+        'Apparel': 10.30,
+        'Shoe': 16.86,
+        'Household Products': 13.17,
+        'Furn/Home Furnishings': 11.27,
+        'Consumer Cyclical': 15.80,  # 大类平均
+        
+        # Consumer Defensive - 防御消费
+        'Beverage (Soft)': 16.90,
+        'Beverage (Alcoholic)': 8.61,
+        'Food Processing': 10.01,
+        'Food Wholesalers': 11.08,
+        'Farming/Agriculture': 16.04,
+        'Consumer Defensive': 13.50,  # 大类平均
+        
+        # Financial Services - 金融
+        'Banks (Regional)': 12.99,
+        'Bank (Money Center)': 10.50,
+        'Insurance (Prop/Cas.)': 8.44,
+        'Insurance (Life)': 12.52,
+        'Insurance (General)': 15.76,
+        'Investments & Asset Management': 38.03,
+        'Financial Svcs. (Non-bank & Insurance)': 57.52,
+        'Financial Services': 20.00,  # 大类平均
+        
+        # Energy - 能源
+        'Oil/Gas (Production and Exploration)': 5.15,
+        'Oil/Gas (Integrated)': 8.16,
+        'Oil/Gas Distribution': 11.56,
+        'Oilfield Svcs/Equip.': 8.63,
+        'Coal & Related Energy': 10.37,
+        'Green & Renewable Energy': 13.44,
+        'Energy': 6.50,  # 大类平均
+        
+        # Industrials - 工业
+        'Aerospace/Defense': 21.58,
+        'Machinery': 16.22,
+        'Engineering/Construction': 17.18,
+        'Building Materials': 11.61,
+        'Electrical Equipment': 24.59,
+        'Industrial Conglomerates': 15.50,
+        'Environmental & Waste Services': 15.61,
+        'Air Transport': 7.58,
+        'Marine Shipping': 7.95,
+        'Railroads': 14.50,
+        'Trucking': 13.80,
+        'Industrials': 17.50,  # 大类平均
+        
+        # Communication Services - 通信服务
+        'Broadcasting': 7.85,
+        'Cable TV': 6.21,
+        'Telecom (Wireless)': 10.50,
+        'Telecom Services': 9.80,
+        'Publishing & Newspapers': 11.24,
+        'Advertising': 12.00,
+        'Information Services': 11.50,
+        'Communication Services': 18.00,  # 大类平均
+        
+        # Real Estate - 房地产
+        'R.E.I.T.': 19.87,
+        'Retail (REITs)': 16.73,
+        'Real Estate (General/Diversified)': 17.29,
+        'Real Estate (Development)': 10.23,
+        'Real Estate (Operations & Services)': 21.95,
+        'Real Estate': 18.00,  # 大类平均
+        
+        # Basic Materials - 基础材料
+        'Chemical (Specialty)': 13.36,
+        'Chemical (Basic)': 8.57,
+        'Chemical (Diversified)': 8.39,
+        'Steel': 11.59,
+        'Metals & Mining': 11.39,
+        'Precious Metals': 10.68,
+        'Paper/Forest Products': 8.18,
+        'Packaging & Container': 9.71,
+        'Construction Supplies': 16.82,
+        'Basic Materials': 12.00,  # 大类平均
+        
+        # Utilities - 公用事业
+        'Power': 12.38,
+        'Utilities': 13.12,
+        'Water': 14.50,
+        'Multi-Utilities': 13.80,
+        
+        # Default - 市场平均
         'Default': 16.95  # 不含金融的市场平均
     }
     
@@ -44,16 +151,16 @@ class ValuationCalculator:
     
     def _get_industry_benchmark(self) -> float:
         """
-        获取行业 EV/EBITDA 基准（Damodaran 大类 + S&P 500 动态调整）
+        获取行业 EV/EBITDA 基准（Damodaran 细分行业 + S&P 500 动态调整）
         """
         # 1. 获取 yfinance 行业分类
+        industry = self.company_info.get('industry', 'Default')
         sector = self.company_info.get('sector', 'Default')
         
-        # 2. Damodaran 大类平均（基准）
-        damodaran_base = self.DAMODARAN_AGGREGATED.get(sector, 16.95)
+        # 2. 优先匹配细分行业，其次匹配大类
+        damodaran_base = self._match_industry(industry, sector)
         
         # 3. S&P 500 动态调整（补偿行业细分差异和市场变化）
-        # 简化实现：使用固定调整因子（后续可实现实时获取）
         # 2026 年市场比 2024 年 Damodaran 数据高约 27%
         market_adjustment = 1.15  # 默认调整因子
         
@@ -61,6 +168,92 @@ class ValuationCalculator:
         final_benchmark = damodaran_base * market_adjustment
         
         return round(final_benchmark, 1)
+    
+    def _match_industry(self, industry: str, sector: str) -> float:
+        """
+        匹配行业到 Damodaran 细分行业数据
+        
+        优先级：精确匹配 > 关键词匹配 > 大类匹配 > 默认值
+        """
+        if not industry or industry == 'Unknown':
+            industry = sector
+        
+        # 1. 精确匹配
+        if industry in self.DAMODARAN_INDUSTRY:
+            return self.DAMODARAN_INDUSTRY[industry]
+        
+        # 2. 关键词匹配（处理行业名称差异）
+        industry_lower = industry.lower()
+        
+        # 半导体
+        if 'semiconductor' in industry_lower:
+            return self.DAMODARAN_INDUSTRY.get('Semiconductor', 34.75)
+        
+        # 软件
+        if 'software' in industry_lower:
+            if 'internet' in industry_lower or 'cloud' in industry_lower:
+                return self.DAMODARAN_INDUSTRY.get('Software (Internet)', 30.26)
+            elif 'entertainment' in industry_lower or 'gaming' in industry_lower:
+                return self.DAMODARAN_INDUSTRY.get('Software (Entertainment)', 22.01)
+            else:
+                return self.DAMODARAN_INDUSTRY.get('Software (System & Application)', 24.48)
+        
+        # 制药/生物科技
+        if 'pharmaceutical' in industry_lower or 'drug' in industry_lower:
+            return self.DAMODARAN_INDUSTRY.get('Drugs (Pharmaceutical)', 15.25)
+        if 'biotechnology' in industry_lower or 'biotech' in industry_lower:
+            return self.DAMODARAN_INDUSTRY.get('Drugs (Biotechnology)', 15.78)
+        
+        # 娱乐/流媒体
+        if 'entertainment' in industry_lower or 'streaming' in industry_lower:
+            return self.DAMODARAN_INDUSTRY.get('Entertainment', 19.41)
+        
+        # 零售
+        if 'retail' in industry_lower:
+            if 'grocery' in industry_lower or 'food' in industry_lower:
+                return self.DAMODARAN_INDUSTRY.get('Retail (Grocery and Food)', 8.94)
+            elif 'automotive' in industry_lower:
+                return self.DAMODARAN_INDUSTRY.get('Retail (Automotive)', 14.79)
+            else:
+                return self.DAMODARAN_INDUSTRY.get('Retail (General)', 17.38)
+        
+        # 汽车
+        if 'auto' in industry_lower or 'automotive' in industry_lower:
+            if 'parts' in industry_lower or 'component' in industry_lower:
+                return self.DAMODARAN_INDUSTRY.get('Auto Parts', 6.43)
+            else:
+                return self.DAMODARAN_INDUSTRY.get('Auto & Truck', 47.76)
+        
+        # 银行
+        if 'bank' in industry_lower:
+            if 'regional' in industry_lower:
+                return self.DAMODARAN_INDUSTRY.get('Banks (Regional)', 12.99)
+            else:
+                return self.DAMODARAN_INDUSTRY.get('Bank (Money Center)', 10.50)
+        
+        # 保险
+        if 'insurance' in industry_lower:
+            return self.DAMODARAN_INDUSTRY.get('Insurance (General)', 15.76)
+        
+        # 能源
+        if 'oil' in industry_lower or 'gas' in industry_lower or 'energy' in industry_lower:
+            if 'renewable' in industry_lower or 'green' in industry_lower:
+                return self.DAMODARAN_INDUSTRY.get('Green & Renewable Energy', 13.44)
+            elif 'integrated' in industry_lower:
+                return self.DAMODARAN_INDUSTRY.get('Oil/Gas (Integrated)', 8.16)
+            else:
+                return self.DAMODARAN_INDUSTRY.get('Oil/Gas (Production and Exploration)', 5.15)
+        
+        # 房地产/REITs
+        if 'reit' in industry_lower or 'real estate' in industry_lower:
+            return self.DAMODARAN_INDUSTRY.get('R.E.I.T.', 19.87)
+        
+        # 3. 大类匹配（使用 sector）
+        if sector in self.DAMODARAN_INDUSTRY:
+            return self.DAMODARAN_INDUSTRY[sector]
+        
+        # 4. 默认值
+        return self.DAMODARAN_INDUSTRY.get('Default', 16.95)
     
     def calculate_all(self) -> dict:
         """执行所有 6 种估值方法"""

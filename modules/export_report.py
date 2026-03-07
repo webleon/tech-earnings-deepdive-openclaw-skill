@@ -88,7 +88,7 @@ class ReportExporter:
             
             # 红旗罚分
             biases = self.result.get('biases', {})
-            red_flags = biases.get('financial_red_flags', {}).get('items', [])
+            red_flags = biases.get('financial_red_flags', {}).get('flags', [])
             red_flag_penalty = sum(
                 15 if f.get('risk') == '高' else
                 8 if f.get('risk') == '中' else
@@ -1194,6 +1194,73 @@ class ReportExporter:
         biases = self.biases
         html = []
         
+        # ========== 动态角标系统 ==========
+        # 定义所有可能的角标说明（按逻辑顺序）
+        all_footnotes = {
+            'sm_expense': {
+                'key': 'sm_expense',
+                'name': 'S&M 费用',
+                'accuracy': '85-90%',
+                'description': '包含一般行政费用（G&A），比纯 S&M 高约 15-20%，但趋势分析可靠',
+                'trigger': self._should_show_footnote('sm_expense')
+            },
+            'stock_dilution': {
+                'key': 'stock_dilution',
+                'name': '股票期权稀释',
+                'accuracy': '90-95%',
+                'description': '基于已发行股本，未包含未行权期权，实际稀释可能高估 20-50%',
+                'trigger': self._should_show_footnote('stock_dilution')
+            },
+            'insider_trading': {
+                'key': 'insider_trading',
+                'name': '内部人交易',
+                'accuracy': '80-85%',
+                'description': '数据延迟 3-5 天，未区分交易类型（市场买卖/期权行权/自动扣税）',
+                'trigger': True  # 始终显示在财务红旗表格中
+            },
+            'receivables': {
+                'key': 'receivables',
+                'name': '应收账款占比',
+                'accuracy': '90-95%',
+                'description': '未考虑行业差异，SaaS 公司正常水平 20-40%',
+                'trigger': True  # 始终显示在财务红旗表格中
+            },
+            'cashflow': {
+                'key': 'cashflow',
+                'name': '现金流检查',
+                'accuracy': '90-95%',
+                'description': '未剔除一次性因素（大型合同预收款、诉讼和解金等）',
+                'trigger': True  # 始终显示在财务红旗表格中
+            },
+            'ai_revenue': {
+                'key': 'ai_revenue',
+                'name': 'AI 收入检查',
+                'accuracy': '70-80%',
+                'description': '基于关键词匹配，假阳性/假阴性约 10-25%，仅供参考',
+                'trigger': self._should_show_footnote('ai_revenue')
+            },
+            'revenue_recognition': {
+                'key': 'revenue_recognition',
+                'name': '收入确认',
+                'accuracy': '需 10-K 数据',
+                'description': '递延收入数据需要从 10-K 文件中提取，当前无法获取',
+                'trigger': True  # 始终显示在财务红旗表格中
+            }
+        }
+        
+        # 收集实际需要的角标（按顺序编号 1, 2, 3...）
+        active_footnotes = []
+        footnote_number = 1
+        for key, footnote in all_footnotes.items():
+            if footnote['trigger']:
+                footnote['number'] = footnote_number
+                footnote['superscript'] = self._get_superscript(footnote_number)
+                active_footnotes.append(footnote)
+                footnote_number += 1
+        
+        # 存储到 self 供后续使用
+        self.active_footnotes = active_footnotes
+        
         html.append('        <h2>🧠 反偏见框架（Anti-Bias Framework）</h2>')
         html.append('        <p>通过系统化的检查清单，帮助识别和克服认知偏见、财务红旗和科技行业特有盲区。</p>')
         
@@ -1260,15 +1327,19 @@ class ReportExporter:
         debt_ratio = balance_sheet.get('debt_to_equity', 0)
         current_ratio = balance_sheet.get('current_ratio', 0)
         
-        # 按照角标顺序排列（1-7），无角标的放在最后
+        # 获取动态角标编号
+        fn_map = {fn['key']: fn for fn in active_footnotes}
+        
+        # 构建财务红旗表格行（只包含实际用到的角标）
+        # 名称与数据准确性说明统一
         all_red_flags = [
-            ('内部人交易³', '检查高管是否大量抛售股票', f'净卖出/总股本={financials.get("insider_selling_ratio", 0):.4f}%', '净卖出/总股本<1% 为正常'),
-            ('应收账款异常⁴', '检查应收账款增速是否超过收入增速', f'应收/收入={receivables_ratio:.1f}%', '应收/收入<30% 为正常'),
-            ('现金流背离⁵', '检查利润为正但现金流为负的情况', f'经营现金流/净利润={cash_flow_ratio:.2f}', '经营现金流/净利润>0.8 为正常'),
-            ('收入确认异常⁷', '检查收入确认政策是否激进，递延收入趋势是否异常', '递延收入/收入=需要 10-K 数据', '递延收入/收入<10% 为正常'),
-            ('GAAP vs Non-GAAP', '检查 GAAP 与 Non-GAAP 利润差异，SBC 占比是否过高', f'差异={gaap_gap:.1f}%，SBC/收入={sbc_ratio:.1f}%', '差异<50% 且 SBC/收入<15% 为正常'),
-            ('资本支出暴增', '检查资本支出占收入比例是否异常高', f'CapEx/收入={capex_ratio:.1f}%', 'CapEx/收入<20% 为正常'),
-            ('负债结构恶化', '检查负债率和流动比率是否恶化', f'负债率={debt_ratio:.2f}, 流动比率={current_ratio:.2f}', '负债率<1 且流动比率>1.5 为正常')
+            ('内部人交易', '检查高管是否大量抛售股票', f'净卖出/总股本={financials.get("insider_selling_ratio", 0):.4f}%', '净卖出/总股本<1% 为正常', 'insider_trading'),
+            ('应收账款占比', '检查应收账款增速是否超过收入增速', f'应收/收入={receivables_ratio:.1f}%', '应收/收入<30% 为正常', 'receivables'),
+            ('现金流检查', '检查利润为正但现金流为负的情况', f'经营现金流/净利润={cash_flow_ratio:.2f}', '经营现金流/净利润>0.8 为正常', 'cashflow'),
+            ('收入确认', '检查收入确认政策是否激进，递延收入趋势是否异常', '递延收入/收入=需要 10-K 数据', '递延收入/收入<10% 为正常', 'revenue_recognition'),
+            ('GAAP vs Non-GAAP', '检查 GAAP 与 Non-GAAP 利润差异，SBC 占比是否过高', f'差异={gaap_gap:.1f}%，SBC/收入={sbc_ratio:.1f}%', '差异<50% 且 SBC/收入<15% 为正常', None),
+            ('资本支出暴增', '检查资本支出占收入比例是否异常高', f'CapEx/收入={capex_ratio:.1f}%', 'CapEx/收入<20% 为正常', None),
+            ('负债结构恶化', '检查负债率和流动比率是否恶化', f'负债率={debt_ratio:.2f}, 流动比率={current_ratio:.2f}', '负债率<1 且流动比率>1.5 为正常', None)
         ]
         
         html.append('        <h3>财务红旗</h3>')
@@ -1285,7 +1356,12 @@ class ReportExporter:
         html.append('            </thead>')
         html.append('            <tbody>')
         
-        for i, (flag_name, description, actual_value, normal_range) in enumerate(all_red_flags):
+        for flag_name, description, actual_value, normal_range, footnote_key in all_red_flags:
+            # 添加角标（如果有）
+            display_name = flag_name
+            if footnote_key and footnote_key in fn_map:
+                display_name = f'{flag_name}{fn_map[footnote_key]["superscript"]}'
+            
             # 检查是否在 red_flags 中
             flag_found = next((f for f in red_flags if flag_name in f.get('name', '')), None)
             
@@ -1299,7 +1375,7 @@ class ReportExporter:
                 status_class = 'score-high'
             
             html.append(f'                <tr>')
-            html.append(f'                    <td>{flag_name}</td>')
+            html.append(f'                    <td>{display_name}</td>')
             html.append(f'                    <td>{description}</td>')
             html.append(f'                    <td>{normal_range}</td>')
             html.append(f'                    <td>{actual_value}</td>')
@@ -1309,9 +1385,113 @@ class ReportExporter:
         html.append('            </tbody>')
         html.append('        </table>')
         
+        # 科技盲区
+        tech_blind_spots = biases.get('tech_blind_spots', {}).get('blind_spots', [])
+        if tech_blind_spots:
+            html.append('        <h3>科技盲区</h3>')
+            html.append('        <p>5 大科技行业特有风险检查，帮助识别科技公司特有的投资盲点。</p>')
+            html.append('        <table>')
+            html.append('            <thead>')
+            html.append('                <tr>')
+            html.append('                    <th>盲区项目</th>')
+            html.append('                    <th>检查内容</th>')
+            html.append('                    <th>状态</th>')
+            html.append('                </tr>')
+            html.append('            </thead>')
+            html.append('            <tbody>')
+            
+            for spot in tech_blind_spots:
+                name = spot.get('name', '')
+                description = spot.get('description', '')
+                risk = spot.get('risk', '中')
+                
+                # 添加角标并统一名称（与数据准确性说明一致）
+                display_name = name
+                if '股票期权稀释' in name and 'stock_dilution' in fn_map:
+                    display_name = f"股票期权稀释{fn_map['stock_dilution']['superscript']}"
+                elif 'AI 收入' in name and 'ai_revenue' in fn_map:
+                    # 统一使用"AI 收入检查"名称
+                    display_name = f"AI 收入检查{fn_map['ai_revenue']['superscript']}"
+                
+                status = f'⚠️ 注意（{risk}风险）'
+                status_class = 'score-medium'
+                
+                html.append(f'                <tr>')
+                html.append(f'                    <td>{display_name}</td>')
+                html.append(f'                    <td>{description}</td>')
+                html.append(f'                    <td class="{status_class}">{status}</td>')
+                html.append(f'                </tr>')
+            
+            html.append('            </tbody>')
+            html.append('        </table>')
+        
         html.append('')
         
         return "\n".join(html)
+    
+    def _should_show_footnote(self, footnote_key: str) -> bool:
+        """判断是否应该显示某个角标（基于实际数据）"""
+        tech_blind_spots = self.biases.get('tech_blind_spots', {}).get('blind_spots', [])
+        
+        if footnote_key == 'sm_expense':
+            # S&M 费用：SaaS 公司或订阅制收入模式
+            financials = self.data.get('financials', {})
+            revenue = financials.get('total_revenue', 0)
+            # 简化判断：如果有 S&M 费用数据且占比较高
+            sm_expense = financials.get('selling_marketing_expense', 0)
+            return sm_expense > 0 and (sm_expense / revenue > 0.3) if revenue > 0 else False
+        
+        elif footnote_key == 'stock_dilution':
+            # 股票期权稀释：检查是否有稀释风险
+            for spot in tech_blind_spots:
+                if '股票期权稀释' in spot.get('name', '') or '稀释' in spot.get('name', ''):
+                    return True
+            return False
+        
+        elif footnote_key == 'ai_revenue':
+            # AI 收入检查：只用于"混合业务公司"（部分 AI），不用于纯 AI 公司
+            # 纯 AI 公司（如 NVDA）：AI 是核心业务，不需要特别标注
+            # 混合业务公司（如 MSFT、AMZN、GOOGL）：AI 是部分业务，需要标注
+            
+            # 判断 1：检查公司行业 - 半导体/芯片公司通常是纯 AI 公司
+            company_info = self.data.get('company_info', {})
+            industry = company_info.get('industry', '').lower()
+            sector = company_info.get('sector', '').lower()
+            
+            # 纯 AI 公司行业列表
+            pure_ai_industries = ['semiconductors', 'semiconductor', '芯片', '半导体', 'gpu', 'ai hardware']
+            is_pure_ai_company = any(ai_ind in industry or ai_ind in sector for ai_ind in pure_ai_industries)
+            
+            if is_pure_ai_company:
+                return False  # 纯 AI 公司不显示 AI 收入检查角标
+            
+            # 判断 2：检查公司描述 - 如果 AI 是核心业务，不显示
+            description = company_info.get('description', '').lower()
+            if description:
+                # 纯 AI 公司特征：AI 是主要/核心业务
+                pure_ai_keywords = ['ai chip', 'gpu', 'ai accelerator', 'ai 芯片', 'gpu 芯片', 'artificial intelligence chip']
+                is_pure_ai = any(keyword in description for keyword in pure_ai_keywords)
+                if is_pure_ai:
+                    return False
+            
+            # 判断 3：检查 tech_blind_spots 中是否有 AI 收入检查
+            for spot in tech_blind_spots:
+                if 'AI 收入' in spot.get('name', ''):
+                    # 即使有 AI 收入检查，也要排除纯 AI 公司
+                    return not is_pure_ai_company
+            
+            return False
+        
+        # 财务红旗相关角标始终显示
+        return True
+    
+    def _get_superscript(self, number: int) -> str:
+        """将数字转换为上标字符"""
+        superscripts = {
+            1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵',
+            6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹', 10: '¹⁰'
+        }
+        return superscripts.get(number, str(number))
     
     def _generate_premortem_section(self) -> str:
         """生成失败预演部分"""
@@ -1438,25 +1618,29 @@ class ReportExporter:
         html.append('            </div>')
         html.append('        </div>')
         
-        # 添加数据准确性说明
+        # 添加数据准确性说明（只显示正文中实际用到的角标）
         html.append('        <div class="appendix-section">')
         html.append('            <h4>📊 数据准确性说明</h4>')
         html.append('            <p class="accuracy-note">本报告使用角标标注数据的准确性和局限性，详细说明如下：</p>')
-        html.append('            <table class="accuracy-table">')
-        html.append('                <thead>')
-        html.append('                    <tr><th>指标</th><th>准确率</th><th>说明</th></tr>')
-        html.append('                </thead>')
-        html.append('                <tbody>')
-        html.append('                    <tr><td>S&M 费用<sup>¹</sup></td><td>85-90%</td><td>包含一般行政费用（G&A），比纯 S&M 高约 15-20%，但趋势分析可靠</td></tr>')
-        html.append('                    <tr><td>股票期权稀释<sup>²</sup></td><td>90-95%</td><td>基于已发行股本，未包含未行权期权，实际稀释可能高估 20-50%</td></tr>')
-        html.append('                    <tr><td>内部人交易<sup>³</sup></td><td>80-85%</td><td>数据延迟 3-5 天，未区分交易类型（市场买卖/期权行权/自动扣税）</td></tr>')
-        html.append('                    <tr><td>应收账款占比<sup>⁴</sup></td><td>90-95%</td><td>未考虑行业差异，SaaS 公司正常水平 20-40%</td></tr>')
-        html.append('                    <tr><td>现金流检查<sup>⁵</sup></td><td>90-95%</td><td>未剔除一次性因素（大型合同预收款、诉讼和解金等）</td></tr>')
-        html.append('                    <tr><td>AI 收入检查<sup>⁶</sup></td><td>70-80%</td><td>基于关键词匹配，假阳性/假阴性约 10-25%，仅供参考</td></tr>')
-        html.append('                    <tr><td>收入确认<sup>⁷</sup></td><td>需 10-K 数据</td><td>递延收入数据需要从 10-K 文件中提取，当前无法获取</td></tr>')
-        html.append('                </tbody>')
-        html.append('            </table>')
-        html.append('            <p class="accuracy-footer">详细准确性说明：<a href="https://github.com/webleon/tech-earnings-deepdive-openclaw-skill/blob/main/docs/DATA_ACCURACY.md" target="_blank">docs/DATA_ACCURACY.md</a></p>')
+        
+        # 检查是否有激活的角标
+        if hasattr(self, 'active_footnotes') and self.active_footnotes:
+            html.append('            <table class="accuracy-table">')
+            html.append('                <thead>')
+            html.append('                    <tr><th>指标</th><th>准确率</th><th>说明</th></tr>')
+            html.append('                </thead>')
+            html.append('                <tbody>')
+            
+            # 只遍历实际激活的角标
+            for fn in self.active_footnotes:
+                html.append(f'                    <tr><td>{fn["name"]}<sup>{fn["superscript"]}</sup></td><td>{fn["accuracy"]}</td><td>{fn["description"]}</td></tr>')
+            
+            html.append('                </tbody>')
+            html.append('            </table>')
+            html.append('            <p class="accuracy-footer">详细准确性说明：<a href="https://github.com/webleon/tech-earnings-deepdive-openclaw-skill/blob/main/docs/DATA_ACCURACY.md" target="_blank">docs/DATA_ACCURACY.md</a></p>')
+        else:
+            html.append('            <p class="accuracy-note" style="color: #7f8c8d; font-style: italic;">本报告未使用特殊数据指标，所有数据均来自标准财报数据源。</p>')
+        
         html.append('        </div>')
         
         html.append('        <div class="appendix-disclaimer">')

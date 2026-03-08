@@ -165,6 +165,150 @@
       font-size: 0.95rem;
     }
     
+    /* Data Flow */
+    .data-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .flow-stage {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 1.5rem;
+      background: var(--surface);
+      border-radius: 12px;
+      position: relative;
+    }
+    
+    .flow-stage:not(:last-child)::after {
+      content: "↓";
+      position: absolute;
+      bottom: -1.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+    
+    .flow-number {
+      background: var(--accent);
+      color: white;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    
+    .flow-content {
+      flex: 1;
+    }
+    
+    .flow-content h3 {
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+    
+    .flow-sources {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+    
+    .source-tag {
+      background: var(--surface-light);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    /* Evidence Layers */
+    .evidence-layers {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .layer-item {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.25rem;
+      background: var(--surface);
+      border-radius: 10px;
+    }
+    
+    .layer-badge {
+      background: var(--accent);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      min-width: 80px;
+      text-align: center;
+    }
+    
+    .layer-content h3 {
+      margin-bottom: 0.25rem;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+    }
+    
+    .layer-content p {
+      font-size: 0.95rem;
+    }
+    
+    /* Framework Diagram */
+    .framework-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .framework-row {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .framework-box {
+      background: var(--surface);
+      padding: 1.25rem 1.75rem;
+      border-radius: 10px;
+      text-align: center;
+      border: 2px solid var(--accent);
+      min-width: 180px;
+    }
+    
+    .framework-box h4 {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .framework-box p {
+      font-size: 0.85rem;
+    }
+    
+    .framework-arrow {
+      font-size: 2rem;
+      color: var(--accent);
+    }
+    
     /* Module Grid */
     .module-grid {
       display: grid;
@@ -235,42 +379,67 @@
       font-size: 0.95rem;
     }
     
-    /* Evidence Layers */
-    .evidence-layers {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+    /* Valuation Grid */
+    .valuation-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
       margin-top: 1.5rem;
     }
     
-    .layer-item {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      padding: 1.25rem;
+    .valuation-card {
       background: var(--surface);
+      padding: 1.5rem;
       border-radius: 10px;
+      border-left: 4px solid var(--accent);
     }
     
-    .layer-badge {
-      background: var(--accent);
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      min-width: 80px;
-      text-align: center;
-    }
-    
-    .layer-content h3 {
-      margin-bottom: 0.25rem;
+    .valuation-card h3 {
       color: var(--text-primary);
+      margin-bottom: 0.5rem;
       font-size: 1.1rem;
     }
     
-    .layer-content p {
+    .valuation-card p {
       font-size: 0.95rem;
+    }
+    
+    .valuation-formula {
+      background: var(--surface-light);
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent-light);
+      margin-top: 0.75rem;
+    }
+    
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .stat-card {
+      text-align: center;
+      padding: 2rem;
+      background: var(--surface);
+      border-radius: 12px;
+    }
+    
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--accent-light);
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      font-size: 1rem;
+      color: var(--text-secondary);
     }
     
     /* Code */
@@ -349,34 +518,6 @@
       border-bottom: none;
     }
     
-    /* Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-top: 2rem;
-    }
-    
-    .stat-card {
-      text-align: center;
-      padding: 2rem;
-      background: var(--surface);
-      border-radius: 12px;
-    }
-    
-    .stat-number {
-      font-family: var(--font-display);
-      font-size: 3rem;
-      font-weight: 800;
-      color: var(--accent-light);
-      margin-bottom: 0.5rem;
-    }
-    
-    .stat-label {
-      font-size: 1rem;
-      color: var(--text-secondary);
-    }
-    
     /* CTA */
     .cta-buttons {
       display: flex;
@@ -412,38 +553,6 @@
     
     .btn-secondary:hover {
       border-color: var(--text-primary);
-    }
-    
-    /* Framework Diagram */
-    .framework-diagram {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-    
-    .framework-row {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-    }
-    
-    .framework-box {
-      background: var(--surface);
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      text-align: center;
-      border: 2px solid var(--accent);
-    }
-    
-    .framework-box h4 {
-      color: var(--text-primary);
-      font-size: 1rem;
-      margin-bottom: 0.25rem;
-    }
-    
-    .framework-box p {
-      font-size: 0.85rem;
     }
     
     /* Navigation dots */
@@ -510,50 +619,106 @@
       <p class="subtitle">机构级科技股财报深度分析系统 · 16 大分析模块 · 6 大投资视角 · 多方法估值矩阵 · 反偏见框架</p>
     </div>
     
-    <!-- Slide 2: What is it -->
+    <!-- Slide 2: Data Comprehensiveness -->
     <div class="slide" data-slide="1">
-      <div class="eyebrow">是什么</div>
-      <h2>为 AI 打造的<br><span class="highlight">专业投资分析系统</span></h2>
-      <div class="grid-2">
-        <div class="card">
-          <h3>📊 16 大分析模块</h3>
-          <p>覆盖收入质量、盈利能力、现金流、竞争格局、高管团队、研发效率等全方位维度</p>
+      <div class="eyebrow">数据全面性</div>
+      <h2>三层证据体系<br><span class="highlight">交叉验证</span></h2>
+      <div class="data-flow">
+        <div class="flow-stage">
+          <div class="flow-number">1</div>
+          <div class="flow-content">
+            <h3>第一层：一手来源</h3>
+            <p>最直接、最可靠的原始数据，未经中介解读</p>
+            <div class="flow-sources">
+              <span class="source-tag">CEO 原话</span>
+              <span class="source-tag">员工评价</span>
+              <span class="source-tag">客户反馈</span>
+              <span class="source-tag">GitHub 活跃度</span>
+              <span class="source-tag">专利数据</span>
+              <span class="source-tag">招聘动向</span>
+            </div>
+          </div>
         </div>
-        <div class="card">
-          <h3>🎯 6 大投资视角</h3>
-          <p>巴菲特质量复利、Baillie Gifford 想象力成长、Tiger Cubs 基本面多空等大师方法论</p>
+        <div class="flow-stage">
+          <div class="flow-number">2</div>
+          <div class="flow-content">
+            <h3>第二层：事实来源</h3>
+            <p>官方披露的财务数据和法律文件</p>
+            <div class="flow-sources">
+              <span class="source-tag">10-K 年报</span>
+              <span class="source-tag">10-Q 季报</span>
+              <span class="source-tag">8-K 重大事件</span>
+              <span class="source-tag">财报电话会</span>
+              <span class="source-tag">法庭文件</span>
+            </div>
+          </div>
         </div>
-        <div class="card">
-          <h3>💰 多方法估值</h3>
-          <p>Owner Earnings、PEG、反向 DCF、魔法公式、EV/EBITDA、Rule of 40 六种方法交叉验证</p>
-        </div>
-        <div class="card">
-          <h3>🛡️ 反偏见框架</h3>
-          <p>认知陷阱自检、财务红旗、科技盲区、Pre-Mortem 事前尸检，避免常见决策错误</p>
+        <div class="flow-stage">
+          <div class="flow-number">3</div>
+          <div class="flow-content">
+            <h3>第三层：观点来源</h3>
+            <p>市场分析和预期，用于了解共识</p>
+            <div class="flow-sources">
+              <span class="source-tag">卖方研报</span>
+              <span class="source-tag">新闻分析</span>
+              <span class="source-tag">价格目标汇总</span>
+              <span class="source-tag">分析师评级</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     
-    <!-- Slide 3: Why Need -->
+    <!-- Slide 3: Algorithm Rationality -->
     <div class="slide" data-slide="2">
-      <div class="eyebrow">为什么需要</div>
-      <h2>传统分析的<span class="highlight">痛点</span></h2>
-      <div class="grid-2">
-        <div class="card" style="border-left-color: var(--danger);">
-          <h3>❌ 信息过载</h3>
-          <p>财报电话会数万文字、SEC 文件数百页、分析师研报几十份 —— 个人投资者难以处理</p>
+      <div class="eyebrow">算法合理性</div>
+      <h2>系统化分析框架<br>避免人为偏见</h2>
+      <div class="framework-diagram">
+        <div class="framework-row">
+          <div class="framework-box">
+            <h4>数据输入</h4>
+            <p>三层证据采集</p>
+          </div>
+          <div class="framework-arrow">→</div>
+          <div class="framework-box">
+            <h4>16 模块分析</h4>
+            <p>全方位维度扫描</p>
+          </div>
+          <div class="framework-arrow">→</div>
+          <div class="framework-box">
+            <h4>6 视角交叉验证</h4>
+            <p>投资哲学对比</p>
+          </div>
         </div>
-        <div class="card" style="border-left-color: var(--danger);">
-          <h3>❌ 视角单一</h3>
-          <p>只看 PE、只看成长、只看技术面 —— 缺乏多维度交叉验证</p>
+        <div class="framework-row">
+          <div class="framework-box">
+            <h4>多方法估值</h4>
+            <p>6 种模型独立计算</p>
+          </div>
+          <div class="framework-arrow">→</div>
+          <div class="framework-box">
+            <h4>反偏见检查</h4>
+            <p>18+ 项自检清单</p>
+          </div>
+          <div class="framework-arrow">→</div>
+          <div class="framework-box">
+            <h4>可执行决策</h4>
+            <p>Action Price + 建仓节奏</p>
+          </div>
         </div>
-        <div class="card" style="border-left-color: var(--danger);">
-          <h3>❌ 认知偏见</h3>
-          <p>确认偏误、锚定效应、过度自信 —— 人性弱点导致决策失误</p>
+      </div>
+      <div class="grid-3" style="margin-top: 2rem;">
+        <div class="card">
+          <h3>🔍 全面性</h3>
+          <p>16 个独立分析模块，覆盖财务、业务、管理、宏观全维度</p>
         </div>
-        <div class="card" style="border-left-color: var(--accent);">
-          <h3>✅ 系统化解决方案</h3>
-          <p>16 模块全面覆盖 + 6 视角交叉验证 + 反偏见框架 —— 机构级分析方法论</p>
+        <div class="card">
+          <h3>⚖️ 客观性</h3>
+          <p>6 大投资视角交叉验证，避免单一方法论的盲区</p>
+        </div>
+        <div class="card">
+          <h3>🛡️ 可靠性</h3>
+          <p>反偏见框架 + Pre-Mortem，主动识别决策陷阱</p>
         </div>
       </div>
     </div>
@@ -561,7 +726,8 @@
     <!-- Slide 4: 16 Modules Overview -->
     <div class="slide" data-slide="3">
       <div class="eyebrow">分析框架</div>
-      <h2>16 大分析模块</h2>
+      <h2>16 大独立分析模块</h2>
+      <p>每个模块独立评分，最后综合汇总，避免"一好百好"的晕轮效应</p>
       <div class="module-grid">
         <div class="module-item">
           <div class="module-letter">A</div>
@@ -646,239 +812,212 @@
       </div>
     </div>
     
-    <!-- Slide 5: Modules Detail 1 -->
+    <!-- Slide 5: Module Groups -->
     <div class="slide" data-slide="4">
-      <div class="eyebrow">模块详解</div>
-      <h2>财务健康度分析 (A-D)</h2>
+      <div class="eyebrow">模块分组</div>
+      <h2>四大分析维度</h2>
       <div class="grid-2">
         <div class="card">
-          <h3>A. 收入质量</h3>
-          <p>检查收入确认政策、一次性收入占比、应收/收入比率、客户集中度风险</p>
+          <h3>📊 财务健康度 (A-D)</h3>
+          <p>收入质量、盈利能力、现金流、前瞻指引 —— 识别财务真实状况</p>
+          <div class="flow-sources" style="margin-top: 1rem;">
+            <span class="source-tag">应收/收入比率</span>
+            <span class="source-tag">ROE/ROIC 趋势</span>
+            <span class="source-tag">经营现金流/净利润</span>
+            <span class="source-tag">指引准确性历史</span>
+          </div>
         </div>
         <div class="card">
-          <h3>B. 盈利能力</h3>
-          <p>毛利率趋势、营业利润率、ROE/ROIC、与同行业对比、盈利可持续性</p>
+          <h3>🏆 业务竞争力 (E-I)</h3>
+          <p>竞争格局、核心 KPI、产品创新、合作伙伴、高管团队 —— 评估护城河</p>
+          <div class="flow-sources" style="margin-top: 1rem;">
+            <span class="source-tag">市场份额变化</span>
+            <span class="source-tag">客户留存率</span>
+            <span class="source-tag">研发管线</span>
+            <span class="source-tag">内部人交易</span>
+          </div>
         </div>
         <div class="card">
-          <h3>C. 现金流</h3>
-          <p>经营现金流/净利润比率、自由现金流、资本支出效率、现金转换周期</p>
+          <h3>🌍 外部环境 (J)</h3>
+          <p>宏观政策、利率环境、监管风险、地缘政治 —— 识别顺风/逆风</p>
+          <div class="flow-sources" style="margin-top: 1rem;">
+            <span class="source-tag">美联储政策</span>
+            <span class="source-tag">行业监管</span>
+            <span class="source-tag">贸易政策</span>
+          </div>
         </div>
         <div class="card">
-          <h3>D. 前瞻指引</h3>
-          <p>管理层指引 vs 实际表现、指引准确性历史、下季度/全年展望、关键假设</p>
+          <h3>💰 估值与决策 (K-P)</h3>
+          <p>多方法估值、筹码分布、长期监控、研发效率、会计质量、ESG</p>
+          <div class="flow-sources" style="margin-top: 1rem;">
+            <span class="source-tag">6 种估值模型</span>
+            <span class="source-tag">机构持仓变化</span>
+            <span class="source-tag">Beneish M-Score</span>
+          </div>
         </div>
       </div>
     </div>
     
-    <!-- Slide 6: Modules Detail 2 -->
+    <!-- Slide 6: 6 Perspectives -->
     <div class="slide" data-slide="5">
-      <div class="eyebrow">模块详解</div>
-      <h2>业务竞争力分析 (E-I)</h2>
-      <div class="grid-2">
-        <div class="card">
-          <h3>E. 竞争格局</h3>
-          <p>市场份额变化、竞争壁垒、替代品威胁、定价权、进入壁垒</p>
-        </div>
-        <div class="card">
-          <h3>F. 核心 KPI</h3>
-          <p>行业特定指标（如 SaaS 的 ARR、电商的 GMV、半导体的出货量）</p>
-        </div>
-        <div class="card">
-          <h3>G. 产品与新业务</h3>
-          <p>产品管线、创新投入、新业务进展、第二增长曲线</p>
-        </div>
-        <div class="card">
-          <h3>H. 合作伙伴生态</h3>
-          <p>战略伙伴关系、供应链稳定性、生态系统健康度、依赖风险</p>
-        </div>
-        <div class="card">
-          <h3>I. 高管团队</h3>
-          <p>CEO/CTO/CFO 背景、内部人交易、高管稳定性、股权结构</p>
-        </div>
-        <div class="card">
-          <h3>J. 宏观政策</h3>
-          <p>利率环境、监管风险、贸易政策、行业补贴、地缘政治</p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Slide 7: Modules Detail 3 -->
-    <div class="slide" data-slide="6">
-      <div class="eyebrow">模块详解</div>
-      <h2>深度分析模块 (K-P)</h2>
-      <div class="grid-2">
-        <div class="card">
-          <h3>K. 估值模型</h3>
-          <p>6 种估值方法交叉验证、敏感性分析、概率加权情景、与历史/同行对比</p>
-        </div>
-        <div class="card">
-          <h3>L. 筹码分布</h3>
-          <p>机构持仓变化、内部人持股、散户情绪、空头比例、集中度风险</p>
-        </div>
-        <div class="card">
-          <h3>M. 长期监控变量</h3>
-          <p>3-5 年关键观察点、技术颠覆风险、行业结构性变化、黑天鹅预警</p>
-        </div>
-        <div class="card">
-          <h3>N. 研发效率</h3>
-          <p>研发/收入比率、专利产出、研发人员占比、创新转化率</p>
-        </div>
-        <div class="card">
-          <h3>O. 会计质量</h3>
-          <p>Beneish M-Score、Sloan 应计利润、财务红旗、审计意见</p>
-        </div>
-        <div class="card">
-          <h3>P. ESG 筛查</h3>
-          <p>环境风险、社会责任、公司治理、争议事件、可持续性评级</p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Slide 8: 6 Perspectives -->
-    <div class="slide" data-slide="7">
       <div class="eyebrow">投资哲学</div>
-      <h2>6 大投资视角</h2>
+      <h2>6 大视角交叉验证</h2>
+      <p>同一公司，6 种投资方法论独立评分，避免"一把锤子看什么都是钉子"</p>
       <div class="perspective-list">
         <div class="perspective-item">
           <div class="perspective-number">01</div>
           <div class="perspective-content">
             <h3>质量复利视角</h3>
-            <p><strong>代表人物：</strong>巴菲特/芒格 | <strong>关注点：</strong>护城河、ROE、自由现金流、管理层质量 | <strong>核心问题：</strong>这是一家可以持有 10 年的公司吗？</p>
+            <p><strong>代表人物：</strong>巴菲特/芒格 | <strong>核心问题：</strong>这是一家可以持有 10 年的公司吗？ | <strong>评分维度：</strong>护城河 (25 分) + ROE(25 分) + 自由现金流 (25 分) + 管理层 (25 分)</p>
           </div>
         </div>
         <div class="perspective-item">
           <div class="perspective-number">02</div>
           <div class="perspective-content">
             <h3>想象力成长视角</h3>
-            <p><strong>代表人物：</strong>Baillie Gifford/ARK | <strong>关注点：</strong>TAM、颠覆性创新、成长速度、网络效应 | <strong>核心问题：</strong>这家公司能改变世界吗？</p>
+            <p><strong>代表人物：</strong>Baillie Gifford/ARK | <strong>核心问题：</strong>这家公司能改变世界吗？ | <strong>评分维度：</strong>TAM(25 分) + 颠覆性 (25 分) + 成长速度 (25 分) + 网络效应 (25 分)</p>
           </div>
         </div>
         <div class="perspective-item">
           <div class="perspective-number">03</div>
           <div class="perspective-content">
             <h3>基本面多空视角</h3>
-            <p><strong>代表人物：</strong>Tiger Cubs | <strong>关注点：</strong>相对价值、催化剂、风险收益比、市场预期差 | <strong>核心问题：</strong>市场定价错误在哪里？</p>
+            <p><strong>代表人物：</strong>Tiger Cubs | <strong>核心问题：</strong>市场定价错误在哪里？ | <strong>评分维度：</strong>相对价值 (25 分) + 催化剂 (25 分) + 风险收益比 (25 分) + 预期差 (25 分)</p>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- Slide 9: 6 Perspectives Detail -->
-    <div class="slide" data-slide="8">
+    <!-- Slide 7: 6 Perspectives Detail -->
+    <div class="slide" data-slide="6">
       <div class="eyebrow">投资哲学</div>
-      <h2>6 大投资视角（续）</h2>
+      <h2>6 大视角交叉验证（续）</h2>
       <div class="perspective-list">
         <div class="perspective-item">
           <div class="perspective-number">04</div>
           <div class="perspective-content">
             <h3>深度价值视角</h3>
-            <p><strong>代表人物：</strong>Klarman/Marks | <strong>关注点：</strong>安全边际、资产价值、逆向机会、清算价值 | <strong>核心问题：</strong>最坏情况下会怎样？</p>
+            <p><strong>代表人物：</strong>Klarman/Marks | <strong>核心问题：</strong>最坏情况下会怎样？ | <strong>评分维度：</strong>安全边际 (25 分) + 资产价值 (25 分) + 逆向机会 (25 分) + 清算价值 (25 分)</p>
           </div>
         </div>
         <div class="perspective-item">
           <div class="perspective-number">05</div>
           <div class="perspective-content">
             <h3>催化剂驱动视角</h3>
-            <p><strong>代表人物：</strong>Tepper/Ackman | <strong>关注点：</strong>事件驱动、activist 机会、重组潜力、政策变化 | <strong>核心问题：</strong>什么事件能触发重估？</p>
+            <p><strong>代表人物：</strong>Tepper/Ackman | <strong>核心问题：</strong>什么事件能触发重估？ | <strong>评分维度：</strong>事件驱动 (25 分) + activist 机会 (25 分) + 重组潜力 (25 分) + 政策变化 (25 分)</p>
           </div>
         </div>
         <div class="perspective-item">
           <div class="perspective-number">06</div>
           <div class="perspective-content">
             <h3>宏观战术视角</h3>
-            <p><strong>代表人物：</strong>Druckenmiller | <strong>关注点：</strong>宏观环境、流动性、行业轮动、货币/财政政策 | <strong>核心问题：</strong>宏观顺风还是逆风？</p>
+            <p><strong>代表人物：</strong>Druckenmiller | <strong>核心问题：</strong>宏观顺风还是逆风？ | <strong>评分维度：</strong>宏观环境 (25 分) + 流动性 (25 分) + 行业轮动 (25 分) + 货币/财政政策 (25 分)</p>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- Slide 10: Valuation Matrix -->
-    <div class="slide" data-slide="9">
+    <!-- Slide 8: Valuation Matrix -->
+    <div class="slide" data-slide="7">
       <div class="eyebrow">估值体系</div>
       <h2>多方法估值矩阵</h2>
-      <div class="grid-3">
-        <div class="card">
+      <p>6 种独立估值方法，交叉验证，避免单一模型的盲点</p>
+      <div class="valuation-grid">
+        <div class="valuation-card">
           <h3>Owner Earnings</h3>
-          <p>所有者收益法，巴菲特最推崇的估值方法，计算真实可分配现金流</p>
+          <p>巴菲特最推崇的估值方法，计算真实可分配现金流</p>
+          <div class="valuation-formula">Owner Earnings = 净利润 + 折旧摊销 - 资本支出 - 营运资本增加</div>
         </div>
-        <div class="card">
+        <div class="valuation-card">
           <h3>PEG</h3>
-          <p>成长调整市盈率，适合高成长公司，PEG<1 为低估</p>
+          <p>成长调整市盈率，适合高成长公司</p>
+          <div class="valuation-formula">PEG = PE / 预期增长率 (PEG&lt;1 为低估)</div>
         </div>
-        <div class="card">
+        <div class="valuation-card">
           <h3>反向 DCF</h3>
           <p>从当前股价反推隐含增长率，判断市场预期是否合理</p>
+          <div class="valuation-formula">隐含增长率 = 求解 DCF 方程中的 g</div>
         </div>
-        <div class="card">
+        <div class="valuation-card">
           <h3>魔法公式</h3>
-          <p>Greenblatt 的 ROIC+ 收益率组合，量化价值投资策略</p>
+          <p>Greenblatt 的 ROIC+ 收益率组合，量化价值投资</p>
+          <div class="valuation-formula">魔法公式排名 = ROIC 排名 + 收益率排名</div>
         </div>
-        <div class="card">
+        <div class="valuation-card">
           <h3>EV/EBITDA</h3>
-          <p>企业价值倍数，跨行业对比标准，剔除资本结构影响</p>
+          <p>企业价值倍数，跨行业对比标准</p>
+          <div class="valuation-formula">EV/EBITDA vs 行业中位数 → 相对估值</div>
         </div>
-        <div class="card">
+        <div class="valuation-card">
           <h3>EV/Revenue + Rule of 40</h3>
-          <p>SaaS 公司专用，增长率 + 利润率>40% 为健康</p>
+          <p>SaaS 公司专用估值方法</p>
+          <div class="valuation-formula">Rule of 40: 增长率% + 利润率% &gt; 40%</div>
         </div>
       </div>
     </div>
     
-    <!-- Slide 11: Evidence Layers -->
-    <div class="slide" data-slide="10">
-      <div class="eyebrow">证据体系</div>
-      <h2>三层证据交叉验证</h2>
-      <div class="evidence-layers">
-        <div class="layer-item">
-          <div class="layer-badge">第一层</div>
-          <div class="layer-content">
-            <h3>一手来源</h3>
-            <p>CEO 原话、员工评价、客户评价、GitHub 活跃度、专利、招聘动向</p>
-          </div>
-        </div>
-        <div class="layer-item">
-          <div class="layer-badge">第二层</div>
-          <div class="layer-content">
-            <h3>事实来源</h3>
-            <p>SEC 文件（10-K/10-Q/8-K）、财报数据、法庭文件</p>
-          </div>
-        </div>
-        <div class="layer-item">
-          <div class="layer-badge">第三层</div>
-          <div class="layer-content">
-            <h3>观点来源</h3>
-            <p>卖方研报、新闻分析、价格目标汇总</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Slide 12: Anti-Bias -->
-    <div class="slide" data-slide="11">
+    <!-- Slide 9: Anti-Bias Framework -->
+    <div class="slide" data-slide="8">
       <div class="eyebrow">反偏见框架</div>
-      <h2>避免常见决策错误</h2>
+      <h2>18+ 项决策质量检查</h2>
       <div class="grid-2">
         <div class="card">
           <h3>🧠 6 大认知陷阱</h3>
           <p>确认偏误、锚定效应、过度自信、损失厌恶、从众心理、近期偏好</p>
+          <div class="flow-sources" style="margin-top: 1rem;">
+            <span class="source-tag">自检清单</span>
+            <span class="source-tag">反向论证</span>
+          </div>
         </div>
         <div class="card">
           <h3>🚩 7 大财务红旗</h3>
           <p>收入确认异常、内部人交易、GAAP vs Non-GAAP 差异、资本支出暴增、现金流背离、负债结构恶化、会计质量</p>
+          <div class="flow-sources" style="margin-top: 1rem;">
+            <span class="source-tag">Beneish M-Score</span>
+            <span class="source-tag">Sloan 应计利润</span>
+          </div>
         </div>
         <div class="card">
           <h3>💻 5 大科技盲区</h3>
           <p>TAM 幻觉、CAC 拐点、股票期权稀释、技术颠覆风险、监管黑天鹅</p>
+          <div class="flow-sources" style="margin-top: 1rem;">
+            <span class="source-tag">专项筛查</span>
+          </div>
         </div>
         <div class="card">
-          <h3>⚰️ Pre-Mortem</h3>
-          <p>事前尸检：假设 3 年后这笔投资失败了，原因可能是什么？</p>
+          <h3>⚰️ Pre-Mortem 事前尸检</h3>
+          <p>假设 3 年后这笔投资失败了，原因可能是什么？</p>
+          <div class="flow-sources" style="margin-top: 1rem;">
+            <span class="source-tag">5 个标准化问题</span>
+            <span class="source-tag">行动建议</span>
+          </div>
         </div>
       </div>
     </div>
     
-    <!-- Slide 13: Usage -->
-    <div class="slide" data-slide="12">
+    <!-- Slide 10: Output Structure -->
+    <div class="slide" data-slide="9">
+      <div class="eyebrow">输出内容</div>
+      <h2>完整的投资备忘录</h2>
+      <div class="output-preview">
+        <h4>📋 报告结构</h4>
+        <ul>
+          <li>✅ 执行摘要与 TL;DR</li>
+          <li>✅ Key Forces（决定性力量）</li>
+          <li>✅ 16 大模块分析（A-P）</li>
+          <li>✅ 估值矩阵（多方法 + 敏感性 + 概率加权情景）</li>
+          <li>✅ 筹码分布分析</li>
+          <li>✅ Variant View（变异视角）</li>
+          <li>✅ 6 大投资哲学视角汇总</li>
+          <li>✅ Pre-Mortem 与反偏见检查</li>
+          <li>✅ 长期监控变量与 Action Trigger</li>
+          <li>✅ 决策框架（持仓分类 / Action Price / 建仓节奏 / 仓位建议）</li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Slide 11: Usage -->
+    <div class="slide" data-slide="10">
       <div class="eyebrow">使用方式</div>
       <h2>简单直接的调用</h2>
       <div class="code-block">~/.openclaw/workspace/skills/tech-earnings-deepdive-openclaw-skill/run.sh NVDA</div>
@@ -890,8 +1029,8 @@
       </div>
     </div>
     
-    <!-- Slide 14: Use Cases -->
-    <div class="slide" data-slide="13">
+    <!-- Slide 12: Use Cases -->
+    <div class="slide" data-slide="11">
       <div class="eyebrow">适用场景</div>
       <h2>任何需要深度研究的时刻</h2>
       <div class="use-case-grid">
@@ -928,29 +1067,8 @@
       </div>
     </div>
     
-    <!-- Slide 15: Output -->
-    <div class="slide" data-slide="14">
-      <div class="eyebrow">输出内容</div>
-      <h2>完整的投资备忘录</h2>
-      <div class="output-preview">
-        <h4>📋 报告包含</h4>
-        <ul>
-          <li>✅ 执行摘要与 TL;DR</li>
-          <li>✅ Key Forces（决定性力量）</li>
-          <li>✅ 16 大模块分析（A-P）</li>
-          <li>✅ 估值矩阵（多方法 + 敏感性 + 概率加权情景）</li>
-          <li>✅ 筹码分布分析</li>
-          <li>✅ Variant View（变异视角）</li>
-          <li>✅ 6 大投资哲学视角汇总</li>
-          <li>✅ Pre-Mortem 与反偏见检查</li>
-          <li>✅ 长期监控变量与 Action Trigger</li>
-          <li>✅ 决策框架（持仓分类 / Action Price / 建仓节奏 / 仓位建议）</li>
-        </ul>
-      </div>
-    </div>
-    
-    <!-- Slide 16: Stats -->
-    <div class="slide" data-slide="15">
+    <!-- Slide 13: Stats -->
+    <div class="slide" data-slide="12">
       <div class="eyebrow">分析深度</div>
       <h2>机构级研究标准</h2>
       <div class="stats-grid">
@@ -967,10 +1085,24 @@
           <div class="stat-label">反偏见检查项</div>
         </div>
       </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">6</div>
+          <div class="stat-label">独立估值方法</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">3</div>
+          <div class="stat-label">证据层级</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">基于公开数据</div>
+        </div>
+      </div>
     </div>
     
-    <!-- Slide 17: CTA -->
-    <div class="slide" data-slide="16">
+    <!-- Slide 14: CTA -->
+    <div class="slide" data-slide="13">
       <div class="eyebrow">开始使用</div>
       <h2>像机构一样<br><span class="highlight">深度研究</span></h2>
       <p>告别碎片化信息，建立系统化分析框架</p>
@@ -983,7 +1115,7 @@
   </div>
   
   <nav class="slide-dots" aria-label="Slide navigation"></nav>
-  <div class="slide-number" id="slideNumber">1 / 17</div>
+  <div class="slide-number" id="slideNumber">1 / 14</div>
   
   <script>
     // === VIEWPORT SCALING ===
@@ -1084,7 +1216,7 @@
     // === ANIMATIONS ===
     function animateSlide(index) {
       const slide = slides[index];
-      const elements = slide.querySelectorAll('h1, h2, h3, p, .card, .module-item, .perspective-item, .layer-item, .code-block, .use-case-card, .stat-card, .btn, .subtitle, .framework-box, .output-preview li');
+      const elements = slide.querySelectorAll('h1, h2, h3, p, .card, .module-item, .perspective-item, .layer-item, .code-block, .use-case-card, .stat-card, .btn, .subtitle, .framework-box, .output-preview li, .valuation-card, .flow-stage, .source-tag');
       
       gsap.fromTo(elements, 
         { opacity: 0, y: 30 },

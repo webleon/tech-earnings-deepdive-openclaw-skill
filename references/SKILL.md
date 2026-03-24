@@ -1,14 +1,6 @@
 ---
 name: tech-earnings-deepdive
 description: 科技股财报深度分析与多视角投资备忘录系统（v3.0）。覆盖A-P共16大分析模块、6大投资哲学视角、机构级证据标准、反偏见框架和可执行决策体系。当用户提到某科技公司财报分析、季报/年报解读、earnings call、收入增长分析、利润率变化、guidance指引、估值模型、DCF、反向DCF、EV/EBITDA、PEG、Rule of 40、管理层分析、竞争格局、持仓判断、是否买入/卖出/加仓某科技股、某公司最新财报怎么看、帮我做个deep dive、多角度估值、投资大师怎么看这家公司、variant view、key forces、kill conditions、筹码分布、高管团队、合作伙伴生态、宏观政策影响等话题时，务必使用此技能。即使用户只是笼统地问"帮我看看NVDA最新财报"或"META这季度表现如何"或"该不该继续持有MSFT"，也应触发此技能来提供全面的财报分析和多视角投资备忘录。此技能与us-value-investing技能互补——us-value-investing侧重长期价值四维评分，本技能侧重最新财报的深度拆解、多投资哲学的综合判断、以及可执行的持仓决策。
-
-output:
-  directory: "~/.openclaw/workspace/output/tech-earnings-deepdive"
-  naming: "{YYYY-MM-DD}_{SYMBOL}_{QUARTER}.{ext}"
-  formats: ["md", "html"]
-  examples:
-    - "2026-03-24_AAPL_Q1.md"
-    - "2026-03-24_NVDA_2026Q1.html"
 ---
 
 # 科技股财报深度分析与多视角投资备忘录 v3.0
